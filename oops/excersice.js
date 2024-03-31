@@ -13,12 +13,14 @@ function StopWatch(){
     }
 
     this.stop=function(){
-        if(duration == 0 || !running) {
+        if(!running) {
             throw new Error('stop watch has not started')
         }
         running=false;
         endTime = new Date();
-        
+        const seconds= (endTime.getTime()-startTime.getTime())/1000;
+        duration+=seconds;
+
     }
 
     this.reset=function(){
@@ -32,35 +34,6 @@ function StopWatch(){
         }
         
     })
-}
-
-
-function StopWatch(){
-    this.duration=0;
-    let running=false;
-    this.start=function(){
-        if(running){
-            throw new Error('stop watch already started')
-        }
-        this.duration = new Date().getSeconds();
-        running=true;
-
-    }
-    this.stop=function(){
-        if(this.duration == 0 || !running) {
-            throw new Error('stop watch has not started')
-        }
-        if(running){
-            this.duration = new Date().getSeconds();
-            running=false;
-        }
-        
-
-    }
-    this.reset=function(){
-        this.duration = 0;
-        running=false;
-    }
 }
 
 const sw=new StopWatch();
