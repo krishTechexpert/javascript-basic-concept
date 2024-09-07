@@ -113,5 +113,5 @@ function Employee2(first,last){
 }
 const emp2=new Employee2('krish','kumar');
 emp2.fullName();
-emp2.salary=20000;
+emp2.salary=200000;
 console.log(emp2.salary)

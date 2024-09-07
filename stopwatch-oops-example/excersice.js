@@ -27,9 +27,10 @@ function StopWatch(){
         duration = 0;
         running=false;
     }
-
+    
     Object.defineProperty(this,'duration',{
         get:function(){
+            console.log(this);
             return duration
         }
         
