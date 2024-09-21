@@ -76,7 +76,9 @@ console.dir(OTPCode);
   header.style.color='red';
 
   document.querySelector('body').addEventListener('click',function(){
-    header.style.color='blue';
+    header.style.color='blue'; // yha per header  closure create ker reha hai ,
+    // function call and removed from stack. and body has event listener attached
+    // so jab humny body pr click kiya toh kese header ny remember ker liya ki header h1 tag hai yha per. due to closure
   })
 
 })()
