@@ -35,6 +35,12 @@ const account4 = {
 
 const accounts = [account1, account2, account3, account4];
 
+// keep in mind accounts array contains address of each object. if you are sharing any accounts and try to update it then  it will also update in all place where you have used updated object
+//accounts[0].interestRate = 10;
+//console.log(accounts)
+//account1.pin = 2000;
+
+
 // Elements
 const labelWelcome = document.querySelector('.welcome');
 const labelDate = document.querySelector('.date');
@@ -69,21 +75,109 @@ const displayMovments = function(movements){
     const html = `
     <div class="movements__row">
       <div class="movements__type movements__type--${type}">${i+1} ${type}</div>
-      <div class="movements__value">${mov}</div>
+      <div class="movements__value">${Math.abs(mov)}€</div>
     </div>
     `
     containerMovements.insertAdjacentHTML('afterbegin',html)
 
   })
-
 }
-displayMovments(account1.movements);
 
 const displayBalance = function(amounts){
+
   const balance = amounts.reduce((acc,currentAmount) => acc + currentAmount,0)
-  labelBalance.textContent = `${balance} EUR`
+  authUser.balance=balance;
+  labelBalance.textContent = `${balance}€`
 }
-displayBalance(account1.movements)
+
+const displaySummary = function(money,interestRate){
+  const incomes = money.filter(amt => amt>0).reduce((acc,cur) => acc + cur,0);
+  labelSumIn.textContent=`${incomes}€`;
+  
+  const outIncome = money.filter(amt => amt<0).reduce((acc,cur) => acc + cur,0);
+  labelSumOut.textContent=`${Math.abs(outIncome)}€`;
+
+  // calculate interest on each deposit and interest should be atleat 1
+  const interest = money
+                  .filter(amt => amt>0)
+                  .map(deposit => (deposit * interestRate)/100)
+                  .filter((int,i,arr) => {// here arr contains interest on each deposit
+                    console.log(" interest should be >=1 on each deposit",arr)// [2.4,5.4,36,.84,15.6] so .84 interest exclude it
+                    return int >=1
+                  })
+                  .reduce((acc,cur) => acc + cur,0)
+  labelSumInterest.textContent=`${interest}€`;
+
+}
+
+let authUser;
+
+const Login = function(){
+  const userName = inputLoginUsername.value;
+  const pin = Number(inputLoginPin.value);
+
+  if( !userName || !pin){
+    alert('please enter login details');
+    return;
+  }else{
+   authUser = accounts.find(user => user.username === userName && user.pin === pin)
+    if(authUser){
+      containerApp.style.opacity='1';
+      labelWelcome.textContent = `Welcome, ${authUser.owner.substring(0,5)}`;
+      labelDate.textContent= new Date().toLocaleDateString();
+      updateUI(authUser)
+      inputLoginUsername.value='';
+      inputLoginPin.value='';
+    }else {
+      alert('Username and pin wrong')
+    }
+  
+  }
+}
+
+//handle Login implementation
+btnLogin.addEventListener('click',function(event){
+  event.preventDefault();
+  Login()
+})
+
+function moneyTransfer(){
+  const name = inputTransferTo.value;
+  const amt = Number(inputTransferAmount.value);
+  if(!name || !amt) {
+    alert('enter money transfer details')
+    return;
+  }
+  const receiverAcc =  accounts.find(user => user.username === name) // as all account object(Heap memory) store in accouns array so receiverAcc points to same object accoring to name value
+  if(amt > 0 && receiverAcc && amt<=authUser.balance && receiverAcc?.username !== authUser.username) {
+    authUser.movements.push(-amt)
+    receiverAcc.movements.push(amt)
+    updateUI(authUser)
+    inputTransferTo.value='';
+    inputTransferAmount.value='';
+
+    // here no need to create extra shallow copy
+    // const existingUser = accounts[receiverAcc];
+    // const updateUser = {...existingUser,movements:[...existingUser.movements]} // shallow copy
+    // updateUser.movements.push(amt)
+    // accounts[receiverAcc] = updateUser;
+  }
+
+}
+
+// money transfer implementation
+btnTransfer.addEventListener('click',function(event){
+  event.preventDefault();
+  moneyTransfer()
+})
+
+function updateUI(authUser){
+  displayBalance(authUser.movements)
+  displayMovments(authUser.movements);
+  displaySummary(authUser.movements,authUser.interestRate)
+
+}
+
 const createUserNames =function(accs){
   accs.forEach(function(userAccount){
     userAccount.username = userAccount.owner.toLowerCase().split(' ').map(name => name[0]).join('')
@@ -148,6 +242,62 @@ checkDogs([9, 16, 6, 8, 3],[10, 5, 6, 1, 4])
 console.log(movements)
 const max= movements.reduce(function(acc,cur){
   if(acc>cur) {return acc}
-  else { return cur}
+  else { return cur} // it will put automatically in acc
 },movements[0])
 console.log(max)
+
+
+
+
+///////////////////////////////////////
+// Coding Challenge #2
+
+/* 
+Let's go back to Julia and Kate's study about dogs. This time, they want to convert dog ages to human ages and calculate the average age of the dogs in their study.
+
+Create a function 'calcAverageHumanAge', which accepts an arrays of dog's ages ('ages'), and does the following things in order:
+
+1. Calculate the dog age in human years using the following formula: if the dog is <= 2 years old, humanAge = 2 * dogAge. If the dog is > 2 years old, humanAge = 16 + dogAge * 4.
+2. Exclude all dogs that are less than 18 human years old (which is the same as keeping dogs that are at least 18 years old)
+3. Calculate the average human age of all adult dogs (you should already know from other challenges how we calculate averages 😉)
+4. Run the function for both test datasets
+
+TEST DATA 1: [5, 2, 4, 1, 15, 8, 3]
+TEST DATA 2: [16, 6, 10, 5, 6, 1, 4]
+
+GOOD LUCK 😀
+*/
+
+
+// function calcAverageHumanAge(ages){
+//   const humanAge= ages.map(function(dogAge){
+//     if(dogAge <=2) {
+//       return 2* dogAge
+//     }else {
+//       return 16+dogAge*4;
+//     }
+//   })
+//   const adultDog =humanAge.filter(age => age >18 )
+//   console.log(adultDog)
+//   const averageadultDog = adultDog.reduce(function(acc,cur){
+//     return acc+cur
+//   },0)
+//   console.log(averageadultDog/adultDog.length)
+// }
+
+
+///////////////////////////////////////
+// Coding Challenge #3
+// convert above calcAverageHumanAge into arrow function with chaining
+
+const calcAverageHumanAge = ages => 
+                            ages
+                            .map(dogAge => dogAge <=2 ? 2*dogAge : 16+dogAge*4)
+                            .filter(adultDog => adultDog >=18) // [36,32,76,48,28]
+                            .reduce((acc,cur,i,adultDogResult) => acc + cur / adultDogResult.length,0)
+                            // important note: here adultDogResult contains the result of filter adultDog
+const avg1=calcAverageHumanAge([5, 2, 4, 1, 15, 8, 3])
+const avg2=calcAverageHumanAge([16,6,10,5,6,1,4])
+console.log("average=",avg1,avg2) //average= 44 47.333333333333336
+
+
