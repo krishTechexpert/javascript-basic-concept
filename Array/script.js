@@ -68,9 +68,11 @@ const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
 
-const displayMovments = function(movements){
+const displayMovments = function(movements,sort=false){
   containerMovements.innerHTML = '';
-  movements.forEach(function(mov,i){
+  const sortedMoves = sort ? movements.slice().sort((a,b) => a-b): movements;
+  console.log("sorted",sortedMoves)
+  sortedMoves.forEach(function(mov,i){
     const type = mov >0 ? 'deposit':'withdrawal'
     const html = `
     <div class="movements__row">
@@ -177,6 +179,61 @@ function updateUI(authUser){
   displaySummary(authUser.movements,authUser.interestRate)
 
 }
+
+//handle delete user account
+
+function deleteUserAccount(){
+  const userName = inputCloseUsername.value;
+  const pin = Number(inputClosePin.value);
+
+  if( !userName || !pin){
+    alert('please enter user account that you want to delete');
+    return;
+  }else if( userName === authUser.username && pin === authUser.pin){
+    const index = accounts.findIndex(user => user.username === authUser.username);
+
+      accounts.splice(index,1)
+    alert('Successfully Deleted account')
+    inputCloseUsername.value='';
+    inputClosePin.value='';
+    containerApp.style.opacity=0;
+    
+  }
+}
+
+btnClose.addEventListener('click',function(event){
+  event.preventDefault();
+  deleteUserAccount()
+})
+
+// handle loan amount
+function loanAmount(){
+  const amount = Number(inputLoanAmount.value);
+
+  // check user deposit of 10% loan amount then loan will only approved
+  // some method -> check there is any deposit of 10 % loan amount. i.e loan amount 30000 then 3000 amount should be deposit in account already once.
+
+  console.log(authUser.movements.some(mov => mov * amount *.1)) // true
+  if(amount> 0 && authUser.movements.some(mov => mov * amount *.1)){
+    authUser.movements.push(amount);
+    inputLoanAmount.value='';
+    updateUI(authUser)
+  }
+  console.log(accounts)
+}
+
+btnLoan.addEventListener('click',function(event){
+  event.preventDefault();
+  loanAmount()
+})
+
+// handle sorting
+let sorted = false;
+btnSort.addEventListener('click',function(event){
+  event.preventDefault();
+  displayMovments(authUser.movements,!sorted)
+  sorted=!sorted;
+})
 
 const createUserNames =function(accs){
   accs.forEach(function(userAccount){
@@ -300,4 +357,43 @@ const avg1=calcAverageHumanAge([5, 2, 4, 1, 15, 8, 3])
 const avg2=calcAverageHumanAge([16,6,10,5,6,1,4])
 console.log("average=",avg1,avg2) //average= 44 47.333333333333336
 
+
+// some method
+console.log(account1.movements.some(mov => mov > 0 )) // true
+
+// every method
+//movements: [430, 1000, 700, 50, 90],
+
+console.log(account4.movements.every(mov => mov < 0 )) // false b'coz there is no positive value
+
+
+// flat method
+
+const arr = [[1,2,3],[4,5,6],7,8] // level 1 array nested
+console.log(arr.flat()) // [1,2,3,4,5,6,7,8]
+
+// if you have nested array with deep level 2 means nested inside nested then use flat(2), here 2 show deep level nested
+
+const arrDeep = [[[1,2],3],[4,[5,6]],7,8];
+console.log(arrDeep.flat()) // [[1,2],3,4,[5,6],7,8]
+
+// But
+console.log(arrDeep.flat(2)) // [1,2,3,4,5,6,7,8]
+
+
+// useCase suppose you want to calculate total balance of all accounts with all movements array
+const allAccounts = JSON.parse(JSON.stringify(accounts)) // copy deep level
+allAccounts[0].pin=77777;
+console.log(accounts,allAccounts)
+
+const allMovementsBalance = 
+  allAccounts.map(mov => mov.movements)
+  .flat()
+  .reduce((acc,cur) => acc + cur,0 )
+console.log(allMovementsBalance) // 17840
+
+// flatMap = flat()+ map() method combination but it will used when there is deep nested array
+const allAccounts2 = JSON.parse(JSON.stringify(accounts)) // copy deep level
+const allMovementsBalanceDeepLevel = allAccounts2.flatMap(acc => acc.movements).reduce((acc,cur) => acc + cur,0 )
+console.log(allMovementsBalanceDeepLevel) // 17840
 
