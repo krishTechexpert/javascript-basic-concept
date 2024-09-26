@@ -21,9 +21,9 @@ const account1 = {
     '2020-01-28T09:15:04.904Z',
     '2020-04-01T10:17:24.185Z',
     '2020-05-08T14:11:59.604Z',
-    '2020-05-27T17:01:17.194Z',
-    '2020-07-11T23:36:17.929Z',
-    '2020-07-12T10:51:36.790Z',
+    '2024-09-24T17:01:17.194Z',
+    '2024-09-25T23:36:17.929Z',
+    '2024-09-26T10:51:36.790Z',
   ],
   currency: 'EUR',
   locale: 'pt-PT', // de-DE
@@ -78,23 +78,59 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
+
+const now =new Date();
+const day = `${now.getDate()}`.padStart(2,0);// yha per max length 2 hai it means agar value length 2 s kam hai toh 0 add ker do like 02 otherwise mat add kro , only as it as value show ker do like 26
+const month=`${now.getMonth()+1}`.padStart(2,0);
+const year = now.getFullYear();
+const hour = `${now.getHours()}`.padStart(2,0);
+const seconds=`${now.getSeconds()}`.padStart(2,0);
+
+const currentDate = `${day}/${month}/${year} ${hour}:${seconds}`
+console.log(currentDate) // 26/09/2024
+
 /////////////////////////////////////////////////
 // Functions
 
-const displayMovements = function (movements, sort = false) {
-  containerMovements.innerHTML = '';
+function dateFormate(date){
 
-  const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
+  function calDaysDifference(date1,date2){
+    return Math.round(Math.abs((date1 - date2)/(1000 * 60 * 60 * 24)))
+  }
+  const daysPassed=calDaysDifference(new Date(),date)
+
+  if(daysPassed === 0) return "Today";
+  if(daysPassed === 1) return "Yesterday";
+  if(daysPassed <=7) return `${daysPassed} days ago`;
+
+  const day = `${date.getDate()}`.padStart(2,0);
+  const month=`${now.getMonth()+1}`.padStart(2,0);
+  const year = now.getFullYear();
+  return `${day}/${month}/${year}`
+  
+}
+
+const formatCurrency = (value,locale,currency) => {
+  return new Intl.NumberFormat(locale,{style:'currency',currency:currency}).format(value)
+}
+
+const displayMovements = function (acc, sort = false) {
+  containerMovements.innerHTML = '';
+  const movs = sort ? acc.movements.slice().sort((a, b) => a - b) : acc.movements;
 
   movs.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
-
+    const date = new Date(acc.movementsDates[i])
+    const displayDate =dateFormate(date)
     const html = `
       <div class="movements__row">
         <div class="movements__type movements__type--${type}">${
-      i + 1
+      i + 1 
     } ${type}</div>
-        <div class="movements__value">${mov.toFixed(2)}€</div>
+      <div class="movements__date">${displayDate}</div>
+      <!-- <div class="movements__value">${mov.toFixed(2)}€</div>
+       </div>-->
+      <div class="movements__value">${formatCurrency(mov,acc.locale,acc.currency)}</div>
       </div>
     `;
 
@@ -102,21 +138,41 @@ const displayMovements = function (movements, sort = false) {
   });
 };
 
+
+
+
 const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${acc.balance.toFixed(2)}€`;
+  //labelBalance.textContent = `${acc.balance.toFixed(2)}€`;
+  labelBalance.textContent = `${formatCurrency(acc.balance,acc.locale,acc.currency)}`;
+
+  
+  const options = {
+    hour:'numeric',
+    minute:'numeric',
+    day:'numeric',
+    month:'numeric',
+    year:'numeric',
+    //weekday:'long'
+  }
+  const internationalDate = new Intl.DateTimeFormat(acc.locale,options).format(new Date())
+
+  labelDate.textContent= internationalDate // show current date as per different accoun
 };
 
 const calcDisplaySummary = function (acc) {
   const incomes = acc.movements
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `${incomes.toFixed(2)}€`;
+  //labelSumIn.textContent = `${incomes.toFixed(2)}€`;
+  labelSumIn.textContent = `${formatCurrency(incomes,acc.locale,acc.currency)}`;
 
   const out = acc.movements
     .filter(mov => mov < 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumOut.textContent = `${Math.abs(out).toFixed(2)}€`;
+  //labelSumOut.textContent = `${Math.abs(out).toFixed(2)}€`;
+  labelSumOut.textContent = `${formatCurrency(out,acc.locale,acc.currency)}`;
+
 
   const interest = acc.movements
     .filter(mov => mov > 0)
@@ -126,7 +182,9 @@ const calcDisplaySummary = function (acc) {
       return int >= 1;
     })
     .reduce((acc, int) => acc + int, 0);
-  labelSumInterest.textContent = `${interest.toFixed(2)}€`;
+  //labelSumInterest.textContent = `${interest.toFixed(2)}€`;
+   labelSumInterest.textContent = `${formatCurrency(interest,acc.locale,acc.currency)}`;
+
 };
 
 const createUsernames = function (accs) {
@@ -142,7 +200,7 @@ createUsernames(accounts);
 
 const updateUI = function (acc) {
   // Display movements
-  displayMovements(acc.movements);
+  displayMovements(acc);
 
   // Display balance
   calcDisplayBalance(acc);
@@ -198,6 +256,11 @@ btnTransfer.addEventListener('click', function (e) {
     currentAccount.movements.push(-amount);
     receiverAcc.movements.push(amount);
 
+    // add fund transfer date
+    currentAccount.movementsDates.push(new Date().toISOString())
+    receiverAcc.movementsDates.push(new Date().toISOString());
+
+
     // Update UI
     updateUI(currentAccount);
   }
@@ -211,7 +274,10 @@ btnLoan.addEventListener('click', function (e) {
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     // Add movement
     currentAccount.movements.push(amount);
-
+    
+    // add loan date
+    currentAccount.movementsDates.push(new Date().toISOString())
+    
     // Update UI
     updateUI(currentAccount);
   }
@@ -244,7 +310,7 @@ btnClose.addEventListener('click', function (e) {
 let sorted = false;
 btnSort.addEventListener('click', function (e) {
   e.preventDefault();
-  displayMovements(currentAccount.movements, !sorted);
+  displayMovements(currentAccount, !sorted);
   sorted = !sorted;
 });
 
@@ -289,3 +355,107 @@ console.log(11n/3n) // 3n, cut decimal part and show nearest number
 console.log(12n/3n) // n
 console.log(10n/3n) // 3n
 console.log(11/3) //3.6666666666666665
+
+
+// Date
+console.log(new Date(0)) //  Thu Jan 01 1970 05:30:00 GMT+0530 (India Standard Time)
+console.log(new Date()) //Thu Sep 26 2024 11:35:24 GMT+0530 (India Standard Time)
+console.log(new Date('26 sept 2024'))
+console.log(new Date().getFullYear()) //2024
+console.log(new Date().getMonth())//8
+console.log(new Date().getDate()) // 26 [day in month]
+console.log(new Date().getDay())//4 // weak days
+console.log(new Date().getHours())//11
+console.log(new Date().getMinutes())//32
+console.log(new Date().getSeconds()) //44
+console.log(new Date().getMilliseconds()) //796
+console.log(new Date().getTime()) // 1727331352643 return timestamp in miliseconds since from Jan 01 1970
+console.log(new Date(1727331352643)) // Thu Sep 26 2024 11:45:52 GMT+0530 (India Standard Time)
+console.log(new Date().toISOString()) // 2024-09-26T06:13:39.809Z
+console.log(new Date(account1.movementsDates[0])) //Tue Nov 19 2019 03:01:17 GMT+0530 (India Standard Time)
+console.log(new Date(2024,8,26,11,32,20)) //Thu Sep 26 2024 11:32:20 GMT+0530 (India Standard Time)
+
+// three day after 1 jan 1970 + next 3 days // Sun Jan 04 1970 05:30:00 GMT+0530 (India Standard Time)
+console.log(new Date(3*24*60*60*1000)) // 3 * 24 hour * 60 mintue * 1 mintue * 1 second(1000 ms)
+
+// To get current timestamp // 1727331550893
+//Returns the number of milliseconds elapsed since midnight, January 1, 1970 Universal (UTC)
+console.log(Date.now()) //1727331550893
+
+//Math operation i.e get the difference of two dates
+
+function caldaysDifference(date1,date2){
+  return Math.abs((date1 - date2)/(1000 * 60 * 60 * 24))// here Math.abs convert negative to positive value from -2 to 2
+}
+const remainDays=caldaysDifference(new Date(24,8,26),new Date(24,8,28)) // 2 days
+console.log(remainDays)
+
+// 1000 -> convert miliseconds to seconds
+// 60 -> convert seconds to  mintue
+// 60 -> convert  mintue to  hour
+// 24 -> convert hour to days
+
+// International date(INTL) api which convert dated according to countries  different language
+
+const options = {
+  hour:'numeric',
+  minute:'numeric',
+  day:'numeric',
+  month:'long',
+  year:'numeric',
+  weekday:'long'
+} 
+
+//const internationalDate=new Intl.DateTimeFormat('en-US',options).format(new Date())
+const locales= navigator.language;
+
+const internationalDate=new Intl.DateTimeFormat(locales,options).format(new Date())
+
+console.log(internationalDate) //Thursday, 26 September 2024 at 19:09
+
+// number format
+const num=10000.00
+console.log('US:',new Intl.NumberFormat('en-US').format(num)) //US: 10,000
+console.log('GERMANY:',new Intl.NumberFormat('de-DE').format(num)) //GERMANY: 10.000
+console.log('Syria:',new Intl.NumberFormat('ar-SY').format(num)) // Syria: ١٠٬٠٠٠
+console.log('India:',new Intl.NumberFormat('en-In').format(num)) // India: 10,000
+
+// currency
+const number1 = 123456.789;
+
+const curOptions = {
+  style:'currency',
+  currency:'EUR'
+}
+console.log(new Intl.NumberFormat('en-In',curOptions).format(number1)) // €1,23,456.79
+
+
+//setTimeout
+
+const exam=['pre','main']
+
+const examTimer=setTimeout((exam1,exam2) => console.log(`you have cleared ${exam1} and ${exam2} exam`),3000,...exam)
+console.log('waiting...',examTimer)
+
+if(exam.includes('main2')) clearTimeout(examTimer)
+
+// setInterval
+
+
+
+// let todayDate = Math.abs((new Date(24,8,30) - Date.now()) / (1000* 60 * 60 *24));
+// console.log(todayDate)
+
+
+// const timerId= setInterval(() => {
+//   const seconds = Math.trunc(Math.abs(todayDate - Date.now())/1000);
+//   console.log(seconds)
+//   if(seconds == 60) clearInterval(timerId)
+// } ,1000)
+
+// const days = now/(1000* 60*60*24)
+//   console.log(days)
+//   const hour = now/(1000 * 60 * 60)
+//   const mintue = now/(1000 * 60)
+//   const seconds = now/(1000 * 60 * 60)
+//   console.log(`${hour}:${mintue}:${seconds}`)
