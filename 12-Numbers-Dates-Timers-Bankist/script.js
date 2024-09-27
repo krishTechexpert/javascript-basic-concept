@@ -114,6 +114,26 @@ const formatCurrency = (value,locale,currency) => {
   return new Intl.NumberFormat(locale,{style:'currency',currency:currency}).format(value)
 }
 
+let timeId;
+
+function startLogoutTimer(){
+  let time=120; //140 sec
+  const tick = () => {
+    const min=`${Math.floor(time/60)}`.padStart(2,0)
+    const sec = `${Math.floor(time%60)}`.padStart(2,0)
+    labelTimer.textContent = `${min}:${sec}`
+    if(time === 0) {
+      clearInterval(timeId)
+      labelWelcome.textContent = `Log in to get started`
+      containerApp.style.opacity = 0;
+    }
+    time--
+  }
+  tick()
+ timeId=setInterval(tick,1000)
+ return timeId
+}
+//startLogoutTimer()
 const displayMovements = function (acc, sort = false) {
   containerMovements.innerHTML = '';
   const movs = sort ? acc.movements.slice().sort((a, b) => a - b) : acc.movements;
@@ -232,6 +252,11 @@ btnLogin.addEventListener('click', function (e) {
     // Clear input fields
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
+    
+    if(timeId) {
+      clearInterval(timeId)
+    }
+    timeId=startLogoutTimer()
 
     // Update UI
     updateUI(currentAccount);
@@ -263,6 +288,11 @@ btnTransfer.addEventListener('click', function (e) {
 
     // Update UI
     updateUI(currentAccount);
+
+    // reset timer
+    clearInterval(timeId)
+    timeId=startLogoutTimer()
+
   }
 });
 
@@ -280,6 +310,11 @@ btnLoan.addEventListener('click', function (e) {
     
     // Update UI
     updateUI(currentAccount);
+
+
+    // reset timer
+    clearInterval(timeId)
+    timeId=startLogoutTimer()
   }
   inputLoanAmount.value = '';
 });
@@ -443,19 +478,82 @@ if(exam.includes('main2')) clearTimeout(examTimer)
 
 
 
-// let todayDate = Math.abs((new Date(24,8,30) - Date.now()) / (1000* 60 * 60 *24));
-// console.log(todayDate)
+// task-1 get current hour,mintue and seconds
+const timerId=setInterval(() =>{
+  const now = new Date();
+  const hour= `${now.getHours()}`.padStart(2,0)
+  const min = `${now.getMinutes()}`.padStart(2,0)
+  const sec = `${now.getSeconds()}`.padStart(2,0)
+  console.log(`${hour}:${min}:${sec}`)
+} ,1000)
 
+// Task-2 logout 10:00 after 10 mintues user should be logout.
 
-// const timerId= setInterval(() => {
-//   const seconds = Math.trunc(Math.abs(todayDate - Date.now())/1000);
-//   console.log(seconds)
-//   if(seconds == 60) clearInterval(timerId)
-// } ,1000)
+//mintue = 120/60=2min
+//seconds = 140 % 60 = 2 min 20 sec -> 20 sec
 
-// const days = now/(1000* 60*60*24)
-//   console.log(days)
-//   const hour = now/(1000 * 60 * 60)
-//   const mintue = now/(1000 * 60)
-//   const seconds = now/(1000 * 60 * 60)
-//   console.log(`${hour}:${mintue}:${seconds}`)
+let time1=140; //140 sec
+
+const timEId=setInterval(() => {
+  const min=`${Math.floor(time1/60)}`.padStart(2,0)
+  const sec = `${Math.floor(time1%60)}`.padStart(2,0)
+  console.log(`${min}:${sec}`)
+  if(time1 === 0) clearInterval(timEId)
+  time1--
+},1000)
+
+// Task -3 
+let time2 = 3740 // 3740 sec means 1h 2 min 20 seconds =62 min 20 sec
+const timeId1=setInterval(() => {
+  //3740 sec/ 3600 sec (1 hour=3600 sec) = 1 hour
+  const hh=`${Math.floor(time2/(60*60))}`.padStart(2,0)
+
+  const min=`${Math.floor((time2%(60*60)/60))}`.padStart(2,0) //first calculate hour then divide by min such as  hour/divide by mintue(60) 2min
+
+  const sec = `${Math.floor(time2%60)}`.padStart(2,0)
+  console.log(`${hh}:${min}:${sec}`)
+  if(time2 === 0) clearInterval(timeId1)
+  time2--
+},1000)
+
+// task-4 
+
+let time3= 90140 // 90140 sec means = 1day 1hour 2 min 20 sec (we can say  25hour 2 min 20 sec)
+
+const timeId2 = setInterval(() => {
+
+  const dd = `${Math.floor(time3/(24*60*60))}`; // 24 hour * 60Min * 60sec
+
+  const hh=`${Math.floor(time3/(60*60))}`.padStart(2,0)
+
+  const min=`${Math.floor((time3%(60*60)/60))}`.padStart(2,0) 
+
+  const sec = `${Math.floor(time3%60)}`.padStart(2,0)
+  
+  console.log(`${dd}d:${hh}h:${min}mm:${sec}s`)
+
+  if(time3 === 0) clearInterval(timeId2)
+  time3--
+},1000)
+
+// task -5 sale timer Diwali 2024 special sale offer  20 oct 2024
+
+const saleDate = new Date('20 oct 2024').getTime() // 1729362600000
+
+const saleTimer = setInterval(() => {
+  const currentDate = new Date().getTime(); // 1727447622866
+  const now = saleDate - currentDate; // 1914905603
+
+  const days = Math.floor(now / (1000 * 60 * 60 * 24));// 22 days
+  const hours = Math.floor((now % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); // get hour then convert into miliseconds
+
+  const minutes = Math.floor((now % (1000 * 60 * 60)) / (1000 * 60)); // get mintue  convert into miliseconds
+  const seconds = Math.floor((now % (1000 * 60)) / 1000);
+
+   console.log(`${days}d:${hours}h:${minutes}mm:${seconds}s`)
+  // If the count down is over, write some text 
+  if (now < 0) {
+    clearInterval(saleTimer);
+      console.log("EXPIRED");
+  }
+},1000)
