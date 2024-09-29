@@ -72,8 +72,37 @@ header.classList.contains('c')
 header.className='abc' // this way directly add class on header and existing class will be overwrite. only show 1 classname
 
 
+// smotth scrolloing
+
+const btnScroll = document.querySelector('.btn--scroll-to');
+const scrollToSection=document.getElementById('section--1')
+
+btnScroll.addEventListener('click',function(e){
+  // old way
+  console.log("learn more button=",e.target.getBoundingClientRect())
+  const s1coords=scrollToSection.getBoundingClientRect()
+
+  console.log("section-1 coordinate=",s1coords)
+
+  console.log("Current scroll (X/Y) position",window.pageXOffset,window.pageYOffset)//
+
+  console.log("viewport width/height",document.documentElement.clientWidth,document.documentElement.clientHeight)
+
+  console.log("document height",document.documentElement.scrollHeight)
+
+  // yah per section1 ki height k sath scroll ki position bi add kerni hogi..
+  //s1coords.top+window.pageYOffset = document ki top s height calculate ho jye gi till section-1
+  window.scrollTo({
+    left:s1coords.left+window.pageXOffset,
+    top: s1coords.top+window.pageYOffset, // imp note: s1coords.top + document position from top till scroll position 
+    behavior:'smooth'
+  })
 
 
+  // new modern way
+//  scrollToSection.scrollIntoView({ behavior: "smooth"})
+
+})
 
 
 
