@@ -38,7 +38,7 @@ header.prepend(message)// put it on first child of header
 
 // traversing going down
 
-// const h1 =  document.querySelector('h1')
+ const h1 =  document.querySelector('h1')
 // console.log(h1.querySelectorAll('.highlight'))
 // console.log(h1.childNodes)
 // console.log(h1.children)
@@ -47,9 +47,27 @@ header.prepend(message)// put it on first child of header
 // h1.lastElementChild.style.color='black';
 // console.log(h1.lastChild)
 
+//Going upwards: parents
 
-const html =  `<div>hello world</div>`
-header.insertAdjacentHTML('afterbegin',html)
+console.log(h1.parentNode)
+console.log(h1.parentElement)
+
+//The closest() method searches up the DOM tree for elements which matches a specified CSS selector.
+
+h1.closest('.header').style.background='var(--gradient-secondary)'
+
+// Going sideways :siblings
+console.log(h1.previousElementSibling) // null
+console.log(h1.nextElementSibling);// h4 element
+// to get all sibling
+console.log(h1.parentElement.children);
+[...h1.parentElement.children].forEach(function(e1){
+console.log(e1)
+})
+
+
+// const html =  `<div>hello world</div>`
+// header.insertAdjacentHTML('afterbegin',html)
 
 // delete element
 
@@ -97,8 +115,6 @@ btnScroll.addEventListener('click',function(e){
     top: s1coords.top+window.pageYOffset, // imp note: s1coords.top + document position from top till scroll position 
     behavior:'smooth'
   })
-
-
   // new modern way
 //  scrollToSection.scrollIntoView({ behavior: "smooth"})
 
@@ -106,7 +122,60 @@ btnScroll.addEventListener('click',function(e){
 
 
 
+//implement event bubbling and capturing
 
+
+const navLink = document.querySelector('.nav__link');
+const navLink_UL= document.querySelector('.nav__links');
+const nav = document.querySelector('.nav');
+
+//The target property returns the element on which the event occurred, opposed to the currentTarget property, which returns the element whose event listener triggered the event.
+
+// e.target rturn krega us element ko jis element  per sabsy phely event fired hwa hai..
+
+// const randomInt = (min,max) => {
+//   return Math.floor(Math.random() * (max-min+1)+min)
+// }
+// const randomColor = () => `rgb(${randomInt(0,255)},${randomInt(0,255)},${randomInt(0,255)})`
+
+
+// navLink.addEventListener('click',function(e){
+//   this.style.backgroundColor = randomColor()
+//   console.log('nav link clicked',e.target,e.currentTarget)
+//   console.log(e.currentTarget === this) //true
+//   e.stopPropagation()
+// })
+
+// navLink_UL.addEventListener('click',function(e){
+//   this.style.backgroundColor = randomColor()
+//   console.log('navigation UL clicked',e.target,e.currentTarget)
+// })
+
+// nav.addEventListener('click',function(e){
+//   this.style.backgroundColor = randomColor()
+
+//   console.log('nav header clicked',e.target,e.currentTarget)
+// })
+
+
+// Page Navigation without event delegation // yha per problem hai ki event is attached on each item individuals which takes lots of memory, this approach is not good for performance optimization
+const allNavLink = document.querySelectorAll('.nav__link');
+// allNavLink.forEach(function(item){
+//   item.addEventListener('click',function(event){
+//     event.preventDefault()
+//     const id=e.target.getAttribute('href');
+//     document.querySelector(id).scrollIntoView({behavior:'smooth'})
+//   })
+// })
+
+// page navigation with event delegation
+navLink_UL.addEventListener('click',function(e){
+  e.preventDefault()
+  if(e.target.classList.contains('nav__link')){
+    const id=e.target.getAttribute('href');
+    document.querySelector(id).scrollIntoView({behavior:'smooth'})
+  }
+})
 
 
 
