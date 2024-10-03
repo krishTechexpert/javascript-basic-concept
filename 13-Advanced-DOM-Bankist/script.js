@@ -54,7 +54,7 @@ console.log(h1.parentElement)
 
 //The closest() method searches up the DOM tree for elements which matches a specified CSS selector.
 
-h1.closest('.header').style.background='var(--gradient-secondary)'
+//h1.closest('.header').style.background='var(--gradient-secondary)'
 
 // Going sideways :siblings
 console.log(h1.previousElementSibling) // null
@@ -177,8 +177,29 @@ navLink_UL.addEventListener('click',function(e){
   }
 })
 
+// implement tabbing
+const tabsParent=document.querySelector('.operations__tab-container')
+const tabs = document.querySelectorAll('.operations__tab');
+const tabsContent=document.querySelectorAll('.operations__content')
 
+tabsParent.addEventListener('click', function(e){
+  const clicked=e.target.closest('.operations__tab')
 
+  if(!clicked) return;
+
+  // remove active class
+    tabs.forEach(t => t.classList.remove('operations__tab--active'))
+    tabsContent.forEach(c => c.classList.remove('operations__content--active'))
+
+  //active tab
+  clicked.classList.add('operations__tab--active')
+  const id=clicked.dataset.tab;
+  console.log('id=',id)
+
+  //active tab content
+  const t1=document.querySelector(`.operations__content--${id}`)
+  t1.classList.add('operations__content--active')
+})
 
 
 
