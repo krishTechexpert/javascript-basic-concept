@@ -201,9 +201,26 @@ tabsParent.addEventListener('click', function(e){
   t1.classList.add('operations__content--active')
 })
 
+// fade navigation animation
 
+const hover = function(e) {
+  console.log("this=",this)// .5,1
+  const hover = e.target.classList.contains('nav__link');
+  if(hover){
+    const link=e.target;
+    const siblings=link.closest('.nav').querySelectorAll('.nav__link');
+    const logo  = link.closest('.nav').querySelector('.nav__logo');
+    siblings.forEach(item =>{
+      if(item !== link){
+        item.style.opacity=this;
+        logo.style.opacity=this;
+      }
+    })
+  }
+}
 
-
+nav.addEventListener('mouseover',hover.bind(.5))
+nav.addEventListener('mouseout',hover.bind(1))
 
 
 
