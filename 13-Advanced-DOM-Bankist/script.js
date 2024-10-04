@@ -29,7 +29,7 @@ message.classList.add('cookie-message');
 //message.textContent=' We used cookied for improved funcationality and analytics.'
 message.innerHTML= ' We used cookied for improved funcationality and analytics. <button class="btn btn--close-cookie">got it!</button>'
 
-header.prepend(message)// put it on first child of header
+//header.prepend(message)// put it on first child of header
 //header.append(message) // put it on last child of header . if you used prepend and append both same time then append will overwrite prepeand.. 
 //header.append(message.cloneNode(true)) // create new sepeare message element last child of header
 
@@ -71,10 +71,10 @@ console.log(e1)
 
 // delete element
 
-document.querySelector('.btn--close-cookie').addEventListener('click',function(){
-  //message.parentElement.removeChild(message) // old way and it will remove from DOM
-  message.remove() // new way and it will remove from DOM 
-})
+// document.querySelector('.btn--close-cookie').addEventListener('click',function(){
+//   //message.parentElement.removeChild(message) // old way and it will remove from DOM
+//   message.remove() // new way and it will remove from DOM 
+// })
 
 //change color in :root variable in css
 document.documentElement.style.setProperty('--color-primary','#5ec576')
@@ -204,7 +204,7 @@ tabsParent.addEventListener('click', function(e){
 // fade navigation animation
 
 const hover = function(e) {
-  console.log("this=",this)// .5,1
+  //console.log("this=",this)// .5,1
   const hover = e.target.classList.contains('nav__link');
   if(hover){
     const link=e.target;
@@ -221,6 +221,158 @@ const hover = function(e) {
 
 nav.addEventListener('mouseover',hover.bind(.5))
 nav.addEventListener('mouseout',hover.bind(1))
+
+// sticky navifation
+// not good approach to sticky
+// const firstSection=scrollToSection.getBoundingClientRect();
+// console.log(firstSection)
+// window.addEventListener('scroll',function(){
+//   if(window.scrollY > firstSection.top){
+//     nav.classList.add('sticky')
+//   }else {
+//     nav.classList.remove('sticky')
+//   }
+// })
+
+//Sticky navigation : Intersection Oberver api
+//https://blog.webdevsimplified.com/2022-01/intersection-observer/
+
+// example1
+// const changeColorCallBack= (entries) => {
+//   entries.forEach(entry => {
+//     const intersecting=entry.isIntersecting
+//     entry.target.style.backgroundColor=intersecting ? 'blue':'red'
+//     entry.target.innerText = `${Math.round(entry.intersectionRatio * 100)}%`
+
+//   })
+// }
+
+// const option = {
+//   root:null,
+//   threshold:0.1
+// }
+
+// const observer = new IntersectionObserver(changeColorCallBack,option)
+// observer.observe(scrollToSection)
+
+//example 2 sticky header
+const myHeader =document.querySelector('.abc')
+const navHeight=nav.getBoundingClientRect().height;
+const stickyHeader=(entires) => {
+  const [entry]= entires; // yha per only one threshold value hai esliye entires[0]
+  if(!entry.isIntersecting){
+    nav.classList.add('sticky')
+  }else{
+    nav.classList.remove('sticky')
+  }
+}
+
+// threshold to 1 which means 100% of the element must be visible before it will be considered intersecting so now our color only changes to blue when the entire element is in the viewport.
+
+const headerObserver = new IntersectionObserver(stickyHeader,{root:null,threshold:0,rootMargin:`-${navHeight}px`})
+headerObserver.observe(myHeader)
+
+// example-3 Reveal section on scrolling
+const allSectionContent = document.querySelector('.section');
+
+const revealSection = (entries,observer) => {
+  const entry = entries[0]// we have not used array as threshold so there is only one threshold so only 1 entry it will give.
+  //console.log(entry)
+  if(!entry.isIntersecting) return;
+  
+  entry.target.classList.remove('section-hidden')
+  observer.unobserve(entry.target)
+}
+
+
+const sectionObserver = new IntersectionObserver(revealSection,{root:null,threshold:0.15})
+allSections.forEach(function(item){
+  //sectionObserver.observe(item)
+  // /item.classList.add('section-hidden')
+})
+
+// example 4 image lazy loading...
+
+const allLazyImages = document.querySelectorAll('img[data-src]')
+
+const lazyloadingImages = function(entries,observe){
+  const [entry] = entries;
+  console.log(entry)
+  if(!entry.isIntersecting) return;
+
+  entry.target.src=entry.target.dataset.src;
+  entry.target.addEventListener('load',function(){
+    entry.target.classList.remove('lazy-img')// when image load then it remove lazy img
+  })
+
+  observe.unobserve(entry.target)
+}
+
+
+const imgObserver = new IntersectionObserver(lazyloadingImages,{root:null,threshold:0,margin:'200px'})
+allLazyImages.forEach((img) => {
+  //imgObserver.observe(img)
+})
+
+
+// implement Slider
+
+const slides = document.querySelectorAll('.slide');
+const btnLeft=document.querySelector('.slider__btn--left');
+const btnRight=document.querySelector('.slider__btn--right');
+const slider =document.querySelector('.slider');
+
+let currentSlide=0;
+const maxLength=slides.length-1;
+
+// slider.style.transform='scale(0.2)'
+// slider.style.overflow='visible';
+// slides.forEach((s,i) => (s.style.transform = `translateX(${100 * i}%)`))
+//0%,100%,200%,300%
+
+function goToSlide(slide){
+  //slide=1
+  slides.forEach((s,i) => (s.style.transform = `translateX(${100 * (i-slide)}%)`))
+  //0-1=-1*100=-100
+  //1-1=0*100=0
+  //2-1=1*100=100
+  //3-1=2*100=200
+}
+goToSlide(currentSlide)
+
+function nextToSlide(){
+  // currentslide=1: -100% 0 100% 200%
+  if(currentSlide === maxLength) {
+    currentSlide=0;
+  }else {
+    currentSlide++;
+  }
+  goToSlide(currentSlide)
+}
+
+function prevToSlide(){
+  if(currentSlide === 0) {
+    currentSlide = maxLength;
+  }else {
+    currentSlide--;
+  }
+  goToSlide(currentSlide)
+
+}
+
+
+
+
+btnRight.addEventListener('click',nextToSlide)
+btnLeft.addEventListener('click',prevToSlide)
+
+
+
+
+
+
+
+
 
 
 
