@@ -1,6 +1,6 @@
 'use strict';
 
-
+//https://bankist-dom.netlify.app/
 console.log('******* Advance DOM **** ')
 
 // selecting elements
@@ -321,14 +321,23 @@ const slides = document.querySelectorAll('.slide');
 const btnLeft=document.querySelector('.slider__btn--left');
 const btnRight=document.querySelector('.slider__btn--right');
 const slider =document.querySelector('.slider');
+const dotsContainer = document.querySelector('.dots')
 
 let currentSlide=0;
 const maxLength=slides.length-1;
 
-// slider.style.transform='scale(0.2)'
-// slider.style.overflow='visible';
-// slides.forEach((s,i) => (s.style.transform = `translateX(${100 * i}%)`))
-//0%,100%,200%,300%
+const createDots = function(){
+  slides.forEach(function(_s,i){
+    const html = `<button class="dots__dot" data-slide="${i}"></button>`
+    dotsContainer.insertAdjacentHTML('beforeend',html)
+  })
+}
+
+const activeDot = function(slide){
+  document.querySelectorAll('.dots__dot').forEach(s => s.classList.remove('dots__dot--active'))
+  document.querySelector(`.dots__dot[data-slide="${slide}"]`).classList.add('dots__dot--active')
+}
+
 
 function goToSlide(slide){
   //slide=1
@@ -338,7 +347,7 @@ function goToSlide(slide){
   //2-1=1*100=100
   //3-1=2*100=200
 }
-goToSlide(currentSlide)
+
 
 function nextToSlide(){
   // currentslide=1: -100% 0 100% 200%
@@ -348,6 +357,8 @@ function nextToSlide(){
     currentSlide++;
   }
   goToSlide(currentSlide)
+  activeDot(currentSlide)
+
 }
 
 function prevToSlide(){
@@ -357,17 +368,33 @@ function prevToSlide(){
     currentSlide--;
   }
   goToSlide(currentSlide)
+  activeDot(currentSlide)
 
 }
 
+function init(){
+  goToSlide(0)
+  createDots()
+  activeDot(0)
+}
+init();
 
-
-
+//event handler
 btnRight.addEventListener('click',nextToSlide)
 btnLeft.addEventListener('click',prevToSlide)
 
+document.addEventListener('keydown',function(e){
+  if(e.key === 'ArrowLeft') prevToSlide();
+  e.key === 'ArrowRight' && nextToSlide()
+})
 
-
+dotsContainer.addEventListener('click',function(e){
+  if(e.target.classList.contains('dots__dot')){
+    const {slide} = e.target.dataset
+    goToSlide(slide)
+    activeDot(slide)
+  }
+})
 
 
 
