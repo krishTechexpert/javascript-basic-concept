@@ -56,7 +56,6 @@ DATA CAR 2: 'Mercedes' going at 95 km/h
 
 GOOD LUCK 😀
 */
-(120*10)/100
 
 function Car(make,speed){
   this.make=make;
