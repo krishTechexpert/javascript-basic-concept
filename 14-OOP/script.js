@@ -300,3 +300,215 @@ console.log(steven.__proto__ === PersonProto) //true
 const sarah = Object.create(PersonProto)
 sarah.init('jony','williams')
 console.log(sarah) // {firstName:'jony',lastName:'williams'}
+
+
+///////////////////////////////////////
+// Coding Challenge #2 ES6 class
+
+/* 
+1. Re-create challenge 1, but this time using an ES6 class;
+2. Add a getter called 'speedUS' which returns the current speed in mi/h (divide by 1.6);
+3. Add a setter called 'speedUS' which sets the current speed in mi/h (but converts it to km/h before storing the value, by multiplying the input by 1.6);
+4. Create a new car and experiment with the accelerate and brake methods, and with the getter and setter.
+
+DATA CAR 1: 'Ford' going at 120 km/h
+
+GOOD LUCK 😀
+*/
+
+class BMWCar {
+
+  constructor(){
+    this._speed = 0;
+  }
+
+  get speedUs(){
+    return this._speed/1.6;
+  }
+  set speedUs(value){
+    if(value>0) {
+      this._speed = value;
+    }
+    
+  }
+
+  accelerate(){
+    this.speedUs = this._speed + 10;
+    //this._speed = this.speedUs;
+  }
+  brake(){
+    this.speedUs = this._speed - 5;
+  }
+}
+
+const c1=new BMWCar();
+c1.accelerate();
+c1.accelerate();
+c1.accelerate();
+c1.accelerate();
+c1.brake()
+console.log(`car speed is ${c1.speedUs}`)
+
+
+// Inheritance between "classes": Constructor function 
+
+// Parent Constructor
+
+// problem is that we are not able to access calcAge inside TraineeEmp. see solution below
+// const Emp = function(firstName,birthYear){
+//   this.firstName=firstName;
+//   this.birthYear=birthYear;
+// }
+// // Adding method to the Emp prototype
+// Emp.prototype.calcAge = function(){
+//   console.log(2037-this.birthYear)
+// }
+
+// // Child Constructor
+// const TraineeEmp = function(firstName,birthYear,company){
+//   // dont' use dupicate code so try to inheritance from parent class
+//   // this.firstName=firstName;
+//   // this.birthYear=birthYear;
+
+//   // Inherit properties from Emp constructor
+//   Emp.call(this,firstName,birthYear) // working fine
+//   this.company=company;
+// }
+
+// // Adding method to the TraineeEmp prototype
+// TraineeEmp.prototype.introduce = function(){
+//   console.log(`my name is ${this.firstName} and I am working in ${this.company}`)
+// }
+
+// const te1= new TraineeEmp('mike',1996,'google');
+// te1.introduce(); // my name is mike and I am working in google
+
+// te1.calcAge(); // give error because this is not inherit by tel1 object. so we have to manaually link TraineeEmp.prototype to Emp.prototype. This ensures that instances of TraineeEmp can access methods defined on Emp.prototype, including calcAge.
+// console.log(te1)
+
+//Solution: 
+
+const Emp = function(firstName,birthYear){
+  this.firstName=firstName;
+  this.birthYear=birthYear;
+}
+// Adding method to the Emp prototype
+Emp.prototype.calcAge = function(){
+  console.log(2037-this.birthYear)
+}
+
+// Child Constructor
+const TraineeEmp = function(firstName,birthYear,company){
+  // dont' use dupicate code so try to inheritance from parent class
+  // this.firstName=firstName;
+  // this.birthYear=birthYear;
+
+  // Inherit properties from Emp constructor
+  Emp.call(this,firstName,birthYear) // working fine
+  this.company=company;
+}
+
+// Inheritance of Methods: I used Object.create(Emp.prototype) to link TraineeEmp.prototype to Emp.prototype. This ensures that instances of TraineeEmp can access methods defined on Emp.prototype, including calcAge.
+
+//manually Linking prototype
+TraineeEmp.prototype = Object.create(Emp.prototype);
+
+//TraineeEmp.prototype = Emp.prototype// not work b'coz both points to Emp.Prototype and we loose connected btween traineeEmp and Emp
+//such as te1 --> __proto__ --> TraineeEmp -->__proto --> Emp (tis is our connection for our understanding)
+
+//important points
+
+ //te1. __proto points to Emp.prototype which should be points to TraineeEmp
+
+// Set TraineeEmp's constructor back to TraineeEmp (optional but recommended)
+TraineeEmp.prototype.constructor = TraineeEmp; // now te1. __proto points to TraineeEmp.prototype
+//and it will point to our child constructor function and refer to child constructor function
+
+
+// Adding method to the TraineeEmp prototype
+TraineeEmp.prototype.introduce = function(){
+  console.log(`my name is ${this.firstName} and I am working in ${this.company}`)
+}
+
+const te1= new TraineeEmp('mike',1996,'google');
+te1.introduce(); // my name is mike and I am working in google
+te1.calcAge(); // 41
+console.log(TraineeEmp.prototype.constructor)
+ console.log(te1.__proto__) //refer to child prototype
+ console.log(te1.__proto__.__proto__) // refer to parent prototype
+
+ console.log(te1 instanceof TraineeEmp)// ofcourse true
+ console.log(te1 instanceof Emp)// true b'coz //manually Linking prototype
+
+
+
+
+
+///////////////////////////////////////
+// Coding Challenge #3 very importnat polymorphism
+
+/* 
+1. Use a constructor function to implement an Electric Car (called EV) as a CHILD "class" of Car. Besides a make and current speed, the EV also has the current battery charge in % ('charge' property);
+2. Implement a 'chargeBattery' method which takes an argument 'chargeTo' and sets the battery charge to 'chargeTo';
+3. Implement an 'accelerate' method that will increase the car's speed by 20, and decrease the charge by 1%. Then log a message like this: 'Tesla going at 140 km/h, with a charge of 22%';
+4. Create an electric car object and experiment with calling 'accelerate', 'brake' and 'chargeBattery' (charge to 90%). Notice what happens when you 'accelerate'! HINT: Review the definiton of polymorphism 😉
+
+DATA CAR 1: 'Tesla' going at 120 km/h, with a charge of 23%
+
+GOOD LUCK 😀
+*/
+// parent constructor
+function CarEV(make,speed){
+  this.make=make;
+  this.speed=speed;
+}
+
+CarEV.prototype.accelerate = function(){
+  const increaseSpeed = this.speed + 10;
+  this.speed = increaseSpeed;
+  console.log('accelerate=',this.speed)
+}
+
+CarEV.prototype.break = function(){
+  const decreaseSpeed = this.speed-5;
+  this.speed = decreaseSpeed;
+  console.log(`${this.make} going at ${this.speed} km/h `)
+}
+
+
+// child constructor
+const EV = function(make,speed,charge){
+  CarEV.call(this,make,speed);
+  this.charge=charge;
+}
+EV.prototype=Object.create(CarEV.prototype) // now EV has access to both method{acceleerate:(),break()} of parent
+
+EV.prototype.chargeBattery = function(chargeTo) {
+  this.charge=chargeTo;
+  console.log(`${this.make} going at ${this.speed} km/h, with a charge of ${this.charge}% `)
+
+}
+
+EV.prototype.accelerate = function(){
+  this.speed = this.speed + 20;
+  this.charge = this.charge - 1;
+  console.log(`${this.make} going at ${this.speed} km/h, with a charge of ${this.charge}% `)
+}
+// EV.prototype.brake = function(){
+//   this.speed = this.speed -10;
+//   this.charge=this.charge-1;
+//   console.log(`${this.make} going at ${this.speed} km/h, with a charge of ${this.charge}% `)
+
+// }
+
+const ev1 = new EV('Tesla',120,23)
+ev1.chargeBattery(90)
+console.log(ev1)
+ev1.break()
+ev1.accelerate();
+console.log(EV.prototype.constructor) // this poinsts to parent constructor
+EV.prototype.constructor=EV;
+console.log(EV.prototype.constructor) // now this poinst to child constructor and this is recommend approach
+
+//as it should be linking like ev1 obj --> EV proto --> CarEV proto
+
