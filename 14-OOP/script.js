@@ -512,3 +512,102 @@ console.log(EV.prototype.constructor) // now this poinst to child constructor an
 
 //as it should be linking like ev1 obj --> EV proto --> CarEV proto
 
+
+//  inheritance with class ES6
+
+class Student extends Human {
+  constructor(firstName,birthday,course ){
+    super(firstName,birthday)
+    this.course=course;
+  }
+  greet(){
+    console.log(`Hey ${this.firstName} and I am studing ${this.course}`)
+  }
+
+}
+
+const std = new Student('krish',2000,'computer science')
+std.greet();
+std.calAge();
+console.log(std)
+
+// last way inheritance Between classes : Object.create ( without new keyword)
+
+const PersonProto2 = {
+  calcAge(){
+    console.log(2037- this.birthYear)
+  },
+  init(firstName,birthYear){
+    this.firstName=firstName;
+    this.birthYear = birthYear;
+  }
+}
+
+const stev = Object.create(PersonProto2)
+
+const StudentProto = Object.create(PersonProto2)
+
+StudentProto.init = function(firstName,birthYear,course){
+  PersonProto2.init.call(this,firstName,birthYear)
+  this.course = course;
+}
+StudentProto.init('jk',2000,'phython')
+
+StudentProto.introduce = function(){
+  console.log(`my name is ${this.firstName} and I am working in ${this.course}`)
+}
+
+const jay=Object.create(StudentProto)
+jay.init('jay',2010,'html')
+jay.introduce();//my name is jay and I am working in html
+jay.calcAge(); //27
+
+
+
+
+
+class Account {
+  constructor(owner,currency,pin){
+    this.owner=owner;
+    this.currency=currency;
+    this._pin=pin;
+    this._movements=[];
+    this.locale=navigator.language;
+  }
+  getMovements(){
+    return this._movements;
+  }
+  deposit(amount){
+    this._movements.push(amount)
+  }
+  // some kind of little bit abstraction b'coz we give positive value but add here negative value 
+  widthdrawl(amount){
+    this._movements.push(-amount)
+  }
+  // suppose this methods our bank internal method which is not accesible out of account object here need some data protection then we need to make variable and method private using underscore(_)..
+_approveLoan(){
+    return true
+  }
+
+  requestLoan(amount){
+    if(this._approveLoan) {
+      //this.movements.push(amount)
+      this.deposit(amount)
+      console.log('Loan approved')
+    }
+  }
+
+
+}
+
+const myAccount = new Account('krish','IND',1111)
+//myAccount.movements.push(200)
+//myAccount.movements.push(-100)
+myAccount.deposit(200)
+myAccount.widthdrawl(100)
+myAccount.requestLoan(1000)
+console.log(myAccount)
+//console.log(myAccount._movements) // it is accessible outside not fully supported
+//console.log(myAccount.getMovements())
+
+// data privacy and data encapsulation
