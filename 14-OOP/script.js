@@ -673,3 +673,4 @@ console.log(myAccount1)
 //chaining
 myAccount1.deposit(300).deposit(500).widthdrawl(135).requestLoan(20000).widthdrawl(1000)
 console.log(myAccount1.getMovements())
+
