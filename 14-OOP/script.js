@@ -563,7 +563,7 @@ jay.introduce();//my name is jay and I am working in html
 jay.calcAge(); //27
 
 
-
+// classes
 
 
 class Account {
@@ -611,3 +611,65 @@ console.log(myAccount)
 //console.log(myAccount.getMovements())
 
 // data privacy and data encapsulation
+
+
+// 1.) public fields (instances) 
+// 2.) private fields #
+//3.) public methods
+//4.) private methods # (to hide the internal details outside of class)
+
+
+class BankAccount {
+
+  // public fields
+  locale = navigator.language; // just like variable but we don't used any var,let ,const. it is just field;
+
+  // private field
+  #movements=[];
+  #pin;
+
+  constructor(owner,currency,pin){
+    this.owner=owner;
+    this.currency=currency;
+    this.#pin=pin;
+    //this._movements=[];
+    //this.locale=navigator.language;
+  }
+  getMovements(){
+    return this.#movements;
+  }
+  deposit(amount){
+    this.#movements.push(amount)
+    return this
+  }
+  widthdrawl(amount){
+    this.#movements.push(-amount)
+    return this
+  }
+  // private methods
+  #approveLoan(){
+    return true
+  }
+
+  requestLoan(amount){
+    if(this.#approveLoan) {
+      //this.movements.push(amount)
+      this.deposit(amount)
+      console.log('Loan approved')
+      return this
+    }
+  }
+
+
+}
+
+const myAccount1 = new BankAccount('krish','IND',1111)
+
+myAccount1.deposit(200)
+myAccount1.widthdrawl(100)
+myAccount1.requestLoan(1000)
+console.log(myAccount1)
+
+//chaining
+myAccount1.deposit(300).deposit(500).widthdrawl(135).requestLoan(20000).widthdrawl(1000)
+console.log(myAccount1.getMovements())
