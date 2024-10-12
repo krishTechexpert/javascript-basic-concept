@@ -3,8 +3,7 @@
 // //Project Live
 // //https://mapty.netlify.app/
 
-// // prettier-ignore
-// const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
 
 const form = document.querySelector('.form');
 const containerWorkouts = document.querySelector('.workouts');
@@ -18,10 +17,19 @@ const inputElevation = document.querySelector('.form__input--elevation');
 class Workout{
   date = new Date();
   id = (Date.now() + '').slice(-10)// last 10 number
+  count=0;
   constructor(coords,distance,duration){
     this.coords=coords; // [latitude,longitude]
     this.distance=distance; // in km
     this.duration=duration; // in mintue
+  }
+  _setDescription(){
+    // // prettier-ignore
+   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+   this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${months[this.date.getMonth()]} ${this.date.getDate()}` 
+  }
+  _getCounts(){
+    this.count++;
   }
 }
 
@@ -30,7 +38,8 @@ class Running extends Workout{
   constructor(coords,distance,duration,cadence){
     super(coords,distance,duration);
     this.cadence=cadence; // step per mintue
-    this.calcPace()
+    this.calcPace();
+    this._setDescription();
   }
 
   calcPace(){
@@ -46,6 +55,8 @@ class Cycling extends Workout{
     super(coords,distance,duration);
     this.elevationGain=elevationGain; // meter
     this.calcSpeed();
+    this._setDescription();
+
   }
 
   calcSpeed(){
@@ -66,7 +77,8 @@ class App{
   constructor(){
     this._getPosition();
     form.addEventListener('submit',this._newWorkout.bind(this))
-    inputType.addEventListener('change',this._toggleElevationField)
+    inputType.addEventListener('change',this._toggleElevationField);
+    containerWorkouts.addEventListener('click',this._moveToPopUp.bind(this))
   }
 
   _getPosition(){
@@ -141,15 +153,20 @@ class App{
     // Add new object to workout array
       this.#workouts.push(workout)
       console.log(workout)
+
     // Render workout on map as marker
-    this.renderWorkoutMarker(workout)
+    this._renderWorkoutMarker(workout)
+
+    // Render Workout list
+    this._renderWorkout(workout)
 
     // hide form + clear input field
-    inputDistance.value= inputDuration.value = inputCadence.value =  inputElevation.value = '';
-    
+    this._hideForm();
+  
   }
 
-  renderWorkoutMarker(workout){
+
+  _renderWorkoutMarker(workout){
     L.marker(workout.coords)
     .addTo(this.#map)
     .bindPopup(
@@ -161,9 +178,87 @@ class App{
         className:`${workout.type}-popup`
       })
     )
-    .setPopupContent("Workout")
+    .setPopupContent(`${workout.type === 'running' ? '🏃‍♂️ ' : '🚴‍♀️ '} ${workout.description}`)
     .openPopup();
+  }
 
+  _renderWorkout(workout){
+    let html= `
+    
+      <li class="workout workout--${workout.type}" data-id=${workout.id}>
+        <h2 class="workout__title">${workout.description}</h2>
+        <div class="workout__details">
+          <span class="workout__icon">🏃‍♂️</span>
+          <span class="workout__value">${workout.distance}</span>
+          <span class="workout__unit">km</span>
+        </div>
+        <div class="workout__details">
+          <span class="workout__icon">⏱</span>
+          <span class="workout__value">${workout.duration}</span>
+          <span class="workout__unit">min</span>
+        </div>
+      `
+
+    if(workout.type === 'running'){
+      html = html + `
+            <div class="workout__details">
+            <span class="workout__icon">⚡️</span>
+            <span class="workout__value">${workout.pace}</span>
+            <span class="workout__unit">min/km</span>
+          </div>
+          <div class="workout__details">
+            <span class="workout__icon">🦶🏼</span>
+            <span class="workout__value">${workout.cadence}</span>
+            <span class="workout__unit">spm</span>
+          </div>
+          </li>
+      `
+    }
+
+    if(workout.type === 'cycling'){
+      html = html + `
+            <div class="workout__details">
+            <span class="workout__icon">⚡️</span>
+            <span class="workout__value">${workout.speed}</span>
+            <span class="workout__unit">min/km</span>
+          </div>
+          <div class="workout__details">
+            <span class="workout__icon">🦶🏼</span>
+            <span class="workout__value">${workout.elevationGain}</span>
+            <span class="workout__unit">spm</span>
+          </div>
+        </li>
+      `
+    }
+
+    form.insertAdjacentHTML('afterend',html)
+  }
+
+  _hideForm(){
+    //css m form class per animation add hai so woh 1sec s delay hide hota hai..so I tried below some trick to form hide immediately
+    form.style.display='none'
+    form.classList.add('hidden');
+    setTimeout(() =>form.style.display='grid',1000 )
+    
+    inputDistance.value= inputDuration.value = inputCadence.value =  inputElevation.value = '';
+
+  }
+
+  _moveToPopUp(e){
+    const workoutEl = e.target.closest('.workout')
+    if(!workoutEl) return;
+    const workout = this.#workouts.find(item => item.id === workoutEl.dataset.id);
+    
+    this.#map.setView(workout.coords,13,{
+      animate:true,
+      pan:{
+        duration:1
+      }
+    })
+
+    // using the public interfaces
+    workout._getCounts();
+    console.log(this) // check count 1 aa reha hai ..basically used count method here
   }
 }
 
