@@ -290,6 +290,11 @@ class App{
       this.#workouts = data.map(workout => {
         if (workout.type === 'running') {
           //yha per re-build object banaya hai to solved this problem workout._getCounts()
+
+
+          // Restoring Class Instances: By creating new instances of Running and Cycling, the methods and properties, like _getCounts or _setDescription, will be available again on these objects.
+
+          
           return new Running(workout.coords, workout.distance, workout.duration, workout.cadence);
         }
         if (workout.type === 'cycling') {
