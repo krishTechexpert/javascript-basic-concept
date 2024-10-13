@@ -75,6 +75,7 @@ class App{
   #mapEvent;
   #workouts=[];
   constructor(){
+    this._getLocalStorage();
     this._getPosition();
     form.addEventListener('submit',this._newWorkout.bind(this))
     inputType.addEventListener('change',this._toggleElevationField);
@@ -101,6 +102,10 @@ class App{
 
     // handling clicks on map
     this.#map.on('click',this._showForm.bind(this))
+
+    // load map marker on page load
+    this.#workouts.forEach(workout =>   this._renderWorkoutMarker(workout))
+
   }
 
   _showForm(mapE){
@@ -162,6 +167,9 @@ class App{
 
     // hide form + clear input field
     this._hideForm();
+
+    // to save workout in localstorage
+    this._setLocalStorage();
   
   }
 
@@ -256,9 +264,41 @@ class App{
       }
     })
 
-    // using the public interfaces
-    workout._getCounts();
+    // // using the public interfaces
+    // The error you're encountering occurs because when objects are retrieved from localStorage, they are no longer instances of Running or Cycling. They are just plain objects, so their prototype methods like _getCounts are not available. To fix this, you'll need to manually recreate the Running and Cycling instances from the plain objects stored in localStorage.
+    
+
+    //solution: You can modify the _getLocalStorage method to recreate the objects using their respective classes.
+    
+    workout._getCounts(); //when you work on local strorage then convert json.stringify and json.parse then out prototype connection loose that's why it show error on get value from localstorage then click on render list show error present
     console.log(this) // check count 1 aa reha hai ..basically used count method here
+  }
+
+  _setLocalStorage(){
+    localStorage.setItem('workouts',JSON.stringify(this.#workouts))
+  }
+  _getLocalStorage(){
+    const data = JSON.parse(localStorage.getItem('workouts'))
+    if(!data) return;
+    if(data){
+      //You can modify the _getLocalStorage method to recreate the objects using their respective classes.
+
+      //bar approach
+      //this.#workouts=data;// gives error points to workout._getCounts();
+
+      // good approach
+      this.#workouts = data.map(workout => {
+        if (workout.type === 'running') {
+          //yha per re-build object banaya hai to solved this problem workout._getCounts()
+          return new Running(workout.coords, workout.distance, workout.duration, workout.cadence);
+        }
+        if (workout.type === 'cycling') {
+          return new Cycling(workout.coords, workout.distance, workout.duration, workout.elevationGain);
+        }
+      });
+      console.log(this.#workouts)
+      this.#workouts.forEach(workout =>   this._renderWorkout(workout))
+    }
   }
 }
 
