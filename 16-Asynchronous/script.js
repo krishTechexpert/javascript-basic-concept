@@ -303,6 +303,14 @@ const getCountryData = function (country) {
 ///////////////////////////////////////
 // Promisifying the Geolocation API
 
+//navigator.geolocation.getCurrentPosition(resolve, reject):
+
+//Instead of manually defining the success and error callbacks (like pos => resolve(pos) for success or err => reject(err) for error), you can pass the resolve and reject functions directly.
+
+//When the position is successfully obtained, the resolve function is called automatically by getCurrentPosition(), and the promise is resolved with the position data.
+
+//If an error occurs, the reject function is called automatically, and the promise is rejected with an error.
+
 const getPosition = function(){
   return new Promise((resolve,reject) => {
     //navigator.geolocation.getCurrentPosition(pos => resolve(pos),err => reject(err))// take position the resolve but
@@ -435,7 +443,7 @@ const createImage = function(imgPath){
 //   })
 // }
 
-//To summarize:
+//To summarize above example:
 
 //Without return: The promise chain will continue immediately, ignoring the waiting period.
 //With return: The chain will wait for the promise returned by wait(2) to resolve (after 2 seconds), ensuring the current image is displayed for that duration before proceeding.
@@ -457,11 +465,11 @@ let promise = Promise.resolve(); // Start with an initial resolved promise
 // modified version
 for (let i = 1; i <= 10; i++) {
   promise = promise.then(() => {
-    console.log(`Iteration ${i}: Promise started`);
+    //console.log(`Iteration ${i}: Promise started`);
     return showNumber(i);
   }).then((number) => {
-    console.log(`Iteration ${i}: Promise resolved with ${number}`);
-  //  return promise; ( only for undertood and) // Logging the promise object (not useful directly, but shows chaining)
+    //console.log(`Iteration ${i}: Promise resolved with ${number}`);
+  //  return promise; ( only for undertood) // Logging the promise object (not useful directly, but shows chaining)
   });
 }
 
@@ -474,3 +482,202 @@ async function printNumber(){
   }
 }
 //printNumber();
+
+//async await
+
+  async function getPosts(){
+    try{
+    const response = await fetch('https://jsonplaceholder.typicode.com/posts')
+    if(!response.ok) {
+      throw new Error('failed to fetch')
+    }
+    const data = await response.json()
+    console.log(data)
+    return `total post is ${data.length}`
+
+    }catch(err) {
+      console.log(err)
+      //Solution: Rethrow the Error very Important concept here why throw err
+    //If you want the promise to be rejected when the fetch fails, you need to rethrow the error in the catch block. This way, the promise returned by getPosts() will be rejected, and you can handle it in a .catch() block when using the function
+      throw err;  // Rethrow the error so the promise is rejected
+    }
+  }
+console.log('1.start fetching post')
+
+//const posts = getPosts();
+//console.log(posts) // Promise<pending> i.e need to consume it
+
+getPosts()
+//when the fetch() API fails (e.g., a 404 error), you're seeing undefined in the .then() callback instead of a rejected promise.
+
+//answer: Promise resolution:
+
+//Since the error is "handled" by the catch block and there’s no rethrowing, the function continues and implicitly returns undefined, making the promise resolve with undefined.
+//That's why you see undefined inside the .then() callback.
+
+.then(posts => console.log(posts)) 
+.catch(err => console.log(err))
+
+//What Happens Now:
+//If the fetch() succeeds, getPosts() will resolve, and the .then() block will log the result.
+//If the fetch() fails (e.g., due to a 404 error), getPosts() will now rethrow the error from the catch block. This will cause the returned promise to be rejected, and the .catch() block will handle the error.
+.finally(() => console.log('3.ending fetch posts'))
+
+
+
+// async await code refactor
+
+async function fetchPostFlow(){
+  console.log('11.start fetching post')
+  const data= await getPosts();
+  console.log(data)
+  console.log('13.ending fetch posts')
+
+}
+//fetchPostFlow();
+
+
+
+// Returing promise in Parallel (Combinator function)
+
+
+// Promise.all([]) // if one of the promose rejected then it will give reject promise otherwise it give resolved promise
+const p1=new Promise((resolve,reject) => setTimeout(() => resolve('hello'),1000))
+const p2=Promise.reject(new Error('failed'));
+
+Promise.all([p1,p2])
+.then(data => console.log(data))
+.catch(err => console.log(err))
+
+
+//Promise.race([]) // resolves or rejects with the first settled (either resolved or rejected) promise.
+
+const p3 = new Promise((_,reject) => setTimeout(() => reject(new Error('api failed')),1000));
+const p4 = new Promise((resolve,_) => setTimeout(() => resolve('done'),2000))
+
+Promise.race([p3,p4])
+.then(data => console.log(data))
+.catch(err => console.log(err))
+
+// Promise.allSettled(new es6)
+                                                                                                  //it gives result of all the reolved and reject promise. it does'nt matter reject or resolved, give all promise in array
+
+Promise.allSettled([Promise.resolve('Success1'),Promise.reject('Error'),Promise.resolve('Success2')])
+.then(res => console.log(res))
+
+
+//Promise.any() resolves with the first fulfilled promise and ignores rejections unless all promises are rejected, in which case it throws an AggregateError.
+
+Promise.any([Promise.resolve('Success3'),Promise.reject('Error2'),Promise.resolve('Success4')])
+.then(res => console.log(res)) // success3
+
+//rejection case:
+
+const p5 = new Promise((_, reject) => setTimeout(reject, 100, 'Rejected first'));
+const p6 = new Promise((_, reject) => setTimeout(reject, 200, 'Rejected second'));
+
+Promise.any([p5, p6])
+  .then((value) => console.log(value))
+  .catch((error) => console.log(error.errors)); // Logs: ['Rejected first', 'Rejected second']
+
+  //If all the promises reject, it throws an AggregateError, which is a special kind of error that bundles multiple errors into one.
+  
+  //An AggregateError object has a specific property called errors that contains an array of all the rejection reasons for each rejected promise.
+
+
+  // interview question
+  const waitResponse = function(second,text){
+    return new Promise((resolve,_) => {
+        setTimeout(() => resolve(text) ,second * 1000)
+    })
+  }
+
+  async function greeting(){
+    console.log('hello')
+    const res= await waitResponse(1,'hi')
+    console.log(res)
+    const res1= await waitResponse(2,'how are you')
+    console.log(res1)
+    const res2 = await waitResponse(2,'I am fine')
+    console.log(res2)
+    const res3 = await waitResponse(1,'great nice to meet you')
+    console.log(res3)
+
+  }
+  greeting()
+
+  ///////////////////////////////////////
+// Coding Challenge #3
+
+/* 
+PART 1
+Write an async function 'loadNPause' that recreates Coding Challenge #2, this time using async/await (only the part where the promise is consumed). Compare the two versions, think about the big differences, and see which one you like more.
+Don't forget to test the error handler, and to set the network speed to 'Fast 3G' in the dev tools Network tab.
+
+PART 2
+1. Create an async function 'loadAll' that receives an array of image paths 'imgArr';
+2. Use .map to loop over the array, to load all the images with the 'createImage' function (call the resulting array 'imgs')
+3. Check out the 'imgs' array in the console! Is it like you expected?
+4. Use a promise combinator function to actually get the images from the array 😉
+5. Add the 'paralell' class to all the images (it has some CSS styles).
+
+TEST DATA: ['img/img-1.jpg', 'img/img-2.jpg', 'img/img-3.jpg']. To test, turn off the 'loadNPause' function.
+
+GOOD LUCK 😀
+*/
+
+
+
+const image1= ['img-1.jpg','img-2.jpg','img-3.jpg']
+const imgContainer1 = document.querySelector('.images');
+
+async function generateImage(imgPath){
+  const img = document.createElement('img');
+  img.src=`./img/${imgPath}`;
+  try{
+    img.addEventListener('load',function(){
+      imgContainer1.append(img)
+    })
+    return img;
+  }catch(err) {
+    console.log(err)
+  }
+  
+}
+
+const timeOut = function(second){
+  return new Promise((resolve,_) => {
+      setTimeout(() => resolve('done') ,second * 1000)
+  })
+}
+
+async function loadImages(){
+  const getImage1= await generateImage(image1[0])
+  await timeOut(5)
+  getImage1.style.display='none';
+
+  const getImage2 = await generateImage(image1[1])
+  await timeOut(5)
+  getImage2.style.display='none';
+
+
+  const getImage3 = await generateImage(image1[2])
+  await timeOut(5)
+  getImage3.style.display='none';
+  await timeOut(2)
+  console.log('thankyou...')
+}
+
+//loadImages();
+
+
+// load all images
+
+const loadAllImages = async function(manyImage){
+  const getAllImages =   manyImage.map(async (img) => await generateImage(img))
+  const res = await Promise.all(getAllImages)
+  res.forEach(img => {
+    img.classList.add('parallel')
+  });
+}
+loadAllImages(image1)
