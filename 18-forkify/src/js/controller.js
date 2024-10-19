@@ -1,154 +1,99 @@
-//import icons from "../img/icons.svg"; // parcel1
-import icons from "url:../img/icons.svg"; //parcel2
+// This file contains application logic inwhich data is shared between modal and view and view-versa.
+
+// application logic : ek bar api s data(modal) aa gya then hum usko modify ker sektai hai accoridng to our ned. yhi application logic hota hai.
+
+
 import 'core-js/stable'; // polyfill for everything
 import 'regenerator-runtime/runtime'; // polyfill for async/await
-const recipeContainer = document.querySelector('.recipe');
+import {async} from "regenerator-runtime";
+import * as model from "./model.js";
+import recipeView from "./views/recipeView.js";
+import searchView from "./views/searchView.js";
 
-const timeout = function (s) {
-  return new Promise(function (_, reject) {
-    setTimeout(function () {
-      reject(new Error(`Request took too long! Timeout after ${s} second`));
-    }, s * 1000);
-  });
-};
+
+
 // receipe api
 // https://forkify-api.herokuapp.com/v2
 
 ///////////////////////////////////////
 
-const renderSpinner = function(parentEl){
-  const markup=`<div class="spinner">
-                  <svg>
-                    <use href="${icons}#icon-loader"></use>
-                  </svg>
-                </div>`;
-  parentEl.innerHTML='';
-  parentEl.insertAdjacentHTML('afterbegin',markup)
-}
+// application logic
 
+const recipeController = async function(){
 
-const showRecipe = async function(){
-  //1 Loading Recipe
   try{
-    renderSpinner(recipeContainer)
+    // render spinner
+    recipeView.renderSpinner()
     const id= window.location.hash.slice(1);
-    console.log(id)
     if(!id) return
 
-    const res = await fetch(
-      `https://forkify-api.herokuapp.com/api/v2/recipes/${id}`
+    // Loading Recipe:  here id will be sent to  in modal file
+    await model.loadRecipe(id)
     
-    )
-    const result = await res.json();
-    if(!res.ok) throw new Error(`${result.message},${res.status}`)
-    let {recipe} =result.data;
-    recipe = {
-      id:recipe.id,
-      title:recipe.title,
-      publisher:recipe.publisher,
-      sourceUrl:recipe.source_url,
-      image:recipe.image_url,
-      servings:recipe.servings,
-      cookingTime:recipe.cooking_time,
-      ingredients:recipe.ingredients
-    }
     //2 Render Recipe
-    const markup= `
-      <figure class="recipe__fig">
-        <img src=${recipe.image} alt=${recipe.title} class="recipe__img" />
-        <h1 class="recipe__title">
-          <span>${recipe.title}</span>
-        </h1>
-      </figure>
-
-      <div class="recipe__details">
-        <div class="recipe__info">
-          <svg class="recipe__info-icon">
-            <use href="${icons}#icon-clock"></use>
-          </svg>
-          <span class="recipe__info-data recipe__info-data--minutes">${recipe.cookingTime}</span>
-          <span class="recipe__info-text">minutes</span>
-        </div>
-        <div class="recipe__info">
-          <svg class="recipe__info-icon">
-            <use href="${icons}#icon-users"></use>
-          </svg>
-          <span class="recipe__info-data recipe__info-data--people">${recipe.servings}</span>
-          <span class="recipe__info-text">servings</span>
-
-          <div class="recipe__info-buttons">
-            <button class="btn--tiny btn--increase-servings">
-              <svg>
-                <use href="${icons}#icon-minus-circle"></use>
-              </svg>
-            </button>
-            <button class="btn--tiny btn--increase-servings">
-              <svg>
-                <use href="${icons}#icon-plus-circle"></use>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <div class="recipe__user-generated">
-          <svg>
-            <use href="${icons}#icon-user"></use>
-          </svg>
-        </div>
-        <button class="btn--round">
-          <svg class="">
-            <use href="${icons}#icon-bookmark-fill"></use>
-          </svg>
-        </button>
-      </div>
-
-      <div class="recipe__ingredients">
-        <h2 class="heading--2">Recipe ingredients</h2>
-        <ul class="recipe__ingredient-list">
-          ${recipe.ingredients.map(ing => {
-            return `
-                <li class="recipe__ingredient">
-                <svg class="recipe__icon">
-                  <use href="src/img/icons.svg#icon-check"></use>
-                </svg>
-                <div class="recipe__quantity">${ing.quantity}</div>
-                <div class="recipe__description">
-                  <span class="recipe__unit">${ing.unit}</span>
-                  ${ing.description}
-                </div>
-              </li>
-            `
-          }).join('')}
-        </ul>
-      </div>
-
-      <div class="recipe__directions">
-        <h2 class="heading--2">How to cook it</h2>
-        <p class="recipe__directions-text">
-          This recipe was carefully designed and tested by
-          <span class="recipe__publisher">${recipe.publisher}</span>. Please check out
-          directions at their website.
-        </p>
-        <a
-          class="btn--small recipe__btn"
-          href=${recipe.source_url}
-          target="_blank"
-        >
-          <span>Directions</span>
-          <svg class="search__icon">
-            <use href="src/img/icons.svg#icon-arrow-right"></use>
-          </svg>
-        </a>
-      </div>
-    `;
-    recipeContainer.innerHTML='';
-    recipeContainer.insertAdjacentHTML('afterbegin',markup)
-    console.log(recipe)
+    recipeView.render(model.state.recipe);
+  
   }catch(error){
-    alert(error)
+    console.log(error)
+    recipeView.renderError()// no need to send error as we recipe view class has specific error message for that.
   }
 }
-//showRecipe();
 
-window.addEventListener('hashchange',showRecipe)
-window.addEventListener('load',showRecipe)
+// The 'Controller' (Subscriber)
+
+const searchRecipeController = async function(query){
+  try{
+    if(!query) return;
+    await model.loadSearchResult(query)
+    console.log(model.state.search.results)
+  }catch(err) {
+    console.log(err)
+  }
+}
+
+/* Notes:
+The Subscriber-Publisher Pattern (also known as Pub-Sub pattern) is a design pattern where one part of your application (the Publisher) triggers an event, and another part (the Subscriber) listens for that event and responds to it. This pattern is useful for decoupling different parts of your code so that they don’t depend directly on each other.
+
+In your example, the functions recipeView.addHandlerRender and searchView.addHandlerSearch are the subscriber methods, and the corresponding recipeController and searchRecipeController functions act as the handlers (subscribers) that respond when the relevant events occur.
+
+
+*/
+
+
+// subscriber-publisher pattern (imp how we connect )
+// Application Initialization (Connecting Publishers and Subscribers)
+
+const appStart=function(){
+  // subscriber pattern
+  recipeView.addHandlerRender(recipeController) // Subscriber listens to page load
+  searchView.addHandlerSearch(searchRecipeController) // Subscriber listens to form submit
+}
+
+appStart();
+
+/*
+  How It Works Together:
+Publisher (View):
+
+recipeView.addHandlerRender(recipeController): This connects the recipeView (Publisher) to the recipeController (Subscriber). When the page loads, recipeView notifies recipeController to fetch and display the recipe.
+searchView.addHandlerSearch(searchRecipeController): This connects the searchView (Publisher) to searchRecipeController (Subscriber). When the search form is submitted, searchView notifies searchRecipeController to handle the search.
+Subscriber (Controller):
+
+recipeController: Gets notified by recipeView when the page loads, and it handles fetching and rendering the recipe.
+searchRecipeController: Gets notified by searchView when the search form is submitted, and it handles fetching the search results.
+*/
+
+/*
+Flow of Events:
+When the user visits the page, recipeView.addHandlerRender(recipeController) connects the recipeView's event (like page load) with the recipeController. So, when the page loads, the recipeController will be executed to fetch and render the recipe.
+
+When the user submits a search query, searchView.addHandlerSearch(searchRecipeController) ensures that the form submission event is captured, and the searchRecipeController is called to handle the search logic.
+*/
+
+
+/*
+Summary:
+Publisher: The part of your app that publishes an event (like user input or page load).
+Subscriber: The part of your app that listens and responds to that event (by executing specific logic).
+Pub-Sub Pattern: The connection between publishers and subscribers ensures that events are handled in a decoupled way, so views (Publishers) don’t need to know the details of how the logic is implemented by controllers (Subscribers).
+*/
