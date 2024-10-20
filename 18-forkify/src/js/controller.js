@@ -9,7 +9,7 @@ import {async} from "regenerator-runtime";
 import * as model from "./model.js";
 import recipeView from "./views/recipeView.js";
 import searchView from "./views/searchView.js";
-
+import ResultsView from "./views/resultsView.js";
 
 
 // receipe api
@@ -43,6 +43,7 @@ const recipeController = async function(){
 
 const searchRecipeController = async function(query){
   try{
+    ResultsView.renderSpinner();
     if(!query) return;
     await model.loadSearchResult(query)
     console.log(model.state.search.results)

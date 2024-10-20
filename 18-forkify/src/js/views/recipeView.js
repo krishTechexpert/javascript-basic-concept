@@ -1,66 +1,26 @@
+import View from "./view.js";
 //contain presentaton logic
 
 //import icons from "../img/icons.svg"; // parcel1
 import icons from "url:../../img/icons.svg"; //parcel2
 
 
-class View {}
-
-class RecipeView {
-  #parentElement = document.querySelector('.recipe');
-  #data;
-  #errorMessage='No recipes found for your query. Please try again!';
-  #message='';
-  render(data){
-    this.#data=data;
-    const markup=this.#generateMarkup();
-    this.#clear();
-    this.#parentElement.insertAdjacentHTML('afterbegin',markup)
-  }
-  #clear(){
-    this.#parentElement.innerHTML='';
-  }
+class RecipeView  extends View{
+  _parentElement = document.querySelector('.recipe');
+  _errorMessage='No recipes found for your query. Please try again!';
+  
  //publisher pattern
   addHandlerRender(handler){
     ['hashchange','load'].forEach(eventName => window.addEventListener(eventName,handler))
   }
   
-  renderError(message=this.#errorMessage) {
-    const markup = `
-        <div class="error">
-        <div>
-          <svg>
-            <use href="${icons}#icon-alert-triangle"></use>
-          </svg>
-        </div>
-        <p>${message}</p>
-      </div>
-    `;
-    this.#clear();
-    this.#parentElement.insertAdjacentHTML('afterbegin',markup)
-  }
 
-  renderMessage(message=this.#message) {
-    const markup = `
-        <div class="message">
-        <div>
-          <svg>
-            <use href="${icons}#icon-smile"></use>
-          </svg>
-        </div>
-        <p>${message}</p>
-      </div>
-    `;
-    this.#clear();
-    this.#parentElement.insertAdjacentHTML('afterbegin',markup)
-  }
-
-  #generateMarkup(){
+  _generateMarkup(){
     return `
       <figure class="recipe__fig">
-        <img src=${this.#data.image} alt=${this.#data.title} class="recipe__img" />
+        <img src=${this._data.image} alt=${this._data.title} class="recipe__img" />
         <h1 class="recipe__title">
-          <span>${this.#data.title}</span>
+          <span>${this._data.title}</span>
         </h1>
       </figure>
 
@@ -69,14 +29,14 @@ class RecipeView {
           <svg class="recipe__info-icon">
             <use href="${icons}#icon-clock"></use>
           </svg>
-          <span class="recipe__info-data recipe__info-data--minutes">${this.#data.cookingTime}</span>
+          <span class="recipe__info-data recipe__info-data--minutes">${this._data.cookingTime}</span>
           <span class="recipe__info-text">minutes</span>
         </div>
         <div class="recipe__info">
           <svg class="recipe__info-icon">
             <use href="${icons}#icon-users"></use>
           </svg>
-          <span class="recipe__info-data recipe__info-data--people">${this.#data.servings}</span>
+          <span class="recipe__info-data recipe__info-data--people">${this._data.servings}</span>
           <span class="recipe__info-text">servings</span>
 
           <div class="recipe__info-buttons">
@@ -108,7 +68,7 @@ class RecipeView {
       <div class="recipe__ingredients">
         <h2 class="heading--2">Recipe ingredients</h2>
         <ul class="recipe__ingredient-list">
-          ${this.#data.ingredients.map(ing => {
+          ${this._data.ingredients.map(ing => {
             return `
                 <li class="recipe__ingredient">
                 <svg class="recipe__icon">
@@ -129,12 +89,12 @@ class RecipeView {
         <h2 class="heading--2">How to cook it</h2>
         <p class="recipe__directions-text">
           This recipe was carefully designed and tested by
-          <span class="recipe__publisher">${this.#data.publisher}</span>. Please check out
+          <span class="recipe__publisher">${this._data.publisher}</span>. Please check out
           directions at their website.
         </p>
         <a
           class="btn--small recipe__btn"
-          href=${this.#data.source_url}
+          href=${this._data.source_url}
           target="_blank"
         >
           <span>Directions</span>
@@ -146,15 +106,7 @@ class RecipeView {
     `;
   }
   
-  renderSpinner(){
-    const markup=`<div class="spinner">
-                    <svg>
-                      <use href="${icons}#icon-loader"></use>
-                    </svg>
-                  </div>`;
-    this.#clear();
-    this.#parentElement.insertAdjacentHTML('afterbegin',markup)
-  }
+  
 }
 
 export default new RecipeView();
