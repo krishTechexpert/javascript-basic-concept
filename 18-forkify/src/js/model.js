@@ -6,7 +6,9 @@ export const state = {
   recipe:{},
   search:{
     query:'',//for analtics (which query user is interested) future used
-    results:[]
+    results:[],
+    page:1,
+    resultsPerPage:10
   }
 }
 
@@ -29,7 +31,7 @@ export const loadRecipe = async function(id){
       cookingTime:recipe.cooking_time,
       ingredients:recipe.ingredients
     }
-    console.log(state.recipe)
+    console.log(state)
 
   } catch(error){
     console.log(`${error}`)
@@ -53,4 +55,21 @@ export const loadSearchResult = async function(query){
     console.log(`${error}`)
     throw error; // rethrow error
   }
+}
+
+export const getSearchResultsPage = function(page=state.search.page){
+  state.search.page=page;
+  const start=(page-1)* state.search.resultsPerPage;
+  const end = page * state.search.resultsPerPage;
+  return state.search.results.slice(start,end)
+}
+
+export const updateServings = function(newServings){
+  const updateIng =state.recipe.ingredients.slice();
+  updateIng.forEach(serving => {
+    serving.quantity= (serving.quantity * newServings) / state.recipe.servings;
+    // newQt= oldQty*newServings/ oldServings // 2*8/4=4
+  });
+  state.recipe.servings=newServings;
+  state.recipe.ingredients=updateIng;
 }

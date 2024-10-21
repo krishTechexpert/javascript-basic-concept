@@ -10,6 +10,13 @@ import * as model from "./model.js";
 import recipeView from "./views/recipeView.js";
 import searchView from "./views/searchView.js";
 import ResultsView from "./views/resultsView.js";
+import PaginationView from "./views/paginationView.js";
+
+
+// parcel code, if you make any chnages in code then page don't reload  and data will not lost. it preserve application state and It is only used in development
+// if(module.hot) {
+//  module.hot.accept()
+// }
 
 
 // receipe api
@@ -32,7 +39,6 @@ const recipeController = async function(){
     
     //2 Render Recipe
     recipeView.render(model.state.recipe);
-  
   }catch(error){
     console.log(error)
     recipeView.renderError()// no need to send error as we recipe view class has specific error message for that.
@@ -43,13 +49,38 @@ const recipeController = async function(){
 
 const searchRecipeController = async function(query){
   try{
-    ResultsView.renderSpinner();
     if(!query) return;
+
+    //
+    ResultsView.renderSpinner();
+    // loading recipe
     await model.loadSearchResult(query)
-    console.log(model.state.search.results)
+    //Rendering recipe
+    ResultsView.render(model.getSearchResultsPage())
+    // show pagination
+    PaginationView.render(model.state.search)
   }catch(err) {
     console.log(err)
+    ResultsView.renderError(err)
   }
+}
+
+const paginationController = function(goToPage){
+  //Rendering new Result 
+  ResultsView.render(model.getSearchResultsPage(goToPage))
+  // updated pagination
+  console.log(model.state.search)
+  PaginationView.render(model.state.search)
+}
+
+// Update Servings (basicalluy update ingredients when more person added)
+
+const servingsController = function(newServings){
+  // update the recipe servings (in state)
+  model.updateServings(newServings)
+  //update the recipe view
+  recipeView.render(model.state.recipe);
+
 }
 
 /* Notes:
@@ -68,6 +99,8 @@ const appStart=function(){
   // subscriber pattern
   recipeView.addHandlerRender(recipeController) // Subscriber listens to page load
   searchView.addHandlerSearch(searchRecipeController) // Subscriber listens to form submit
+  PaginationView.addHandlerClick(paginationController)
+  recipeView.addHandlerUpdateServings(servingsController)
 }
 
 appStart();
