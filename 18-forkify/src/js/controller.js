@@ -34,7 +34,9 @@ const recipeController = async function(){
     const id= window.location.hash.slice(1);
     if(!id) return
 
-    // Loading Recipe:  here id will be sent to  in modal file
+    // update results view to mark selected search results
+    ResultsView.update(model.getSearchResultsPage())
+    // Loading Recipe:  here id will be sent to in modal file
     await model.loadRecipe(id)
     
     //2 Render Recipe
@@ -79,7 +81,10 @@ const servingsController = function(newServings){
   // update the recipe servings (in state)
   model.updateServings(newServings)
   //update the recipe view
-  recipeView.render(model.state.recipe);
+  //recipeView.render(model.state.recipe);
+
+  // update only specific part(text,attribute etc) into DOM ,not reload full DOM such as virtual DOM
+  recipeView.update(model.state.recipe);
 
 }
 
