@@ -52,7 +52,7 @@ const recipeController = async function(){
 const searchRecipeController = async function(query){
   try{
     if(!query) return;
-
+    
     //
     ResultsView.renderSpinner();
     // loading recipe
