@@ -14,7 +14,7 @@ class RecipeView  extends View{
     ['hashchange','load'].forEach(eventName => window.addEventListener(eventName,handler))
   }
   
-  addHandlerUpdateServings = function(handler){
+  addHandlerUpdateServings(handler){
     this._parentElement.addEventListener('click',function(e){
       const btn = e.target.closest('.btn--update-servings'); //closest= traveres up whenerever parents matched
       if(!btn) return;
@@ -24,6 +24,14 @@ class RecipeView  extends View{
       }
     })
   }
+
+  addHandlerBookmarked(handler){
+    this._parentElement.addEventListener('click',function(e){
+      const btn = e.target.closest('.add-bookmark');
+      if(!btn) return;
+      handler()
+    })
+  }  
 
   _generateMarkup(){
     return `
@@ -68,9 +76,9 @@ class RecipeView  extends View{
             <use href="${icons}#icon-user"></use>
           </svg>
         </div>
-        <button class="btn--round">
+        <button class="btn--round add-bookmark">
           <svg class="">
-            <use href="${icons}#icon-bookmark-fill"></use>
+            <use href="${icons}#icon-bookmark${this._data.bookmarked ? '-fill':''}"></use>
           </svg>
         </button>
       </div>

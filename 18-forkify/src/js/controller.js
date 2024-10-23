@@ -11,7 +11,8 @@ import recipeView from "./views/recipeView.js";
 import searchView from "./views/searchView.js";
 import ResultsView from "./views/resultsView.js";
 import PaginationView from "./views/paginationView.js";
-
+import BookmarksView from "./views/bookmarksView.js";
+import bookmarksView from './views/bookmarksView.js';
 
 // parcel code, if you make any chnages in code then page don't reload  and data will not lost. it preserve application state and It is only used in development
 // if(module.hot) {
@@ -26,6 +27,7 @@ import PaginationView from "./views/paginationView.js";
 
 // application logic
 
+// sidebar list 
 const recipeController = async function(){
 
   try{
@@ -36,6 +38,8 @@ const recipeController = async function(){
 
     // update results view to mark selected search results
     ResultsView.update(model.getSearchResultsPage())
+    BookmarksView.update(model.state.bookmarks)
+
     // Loading Recipe:  here id will be sent to in modal file
     await model.loadRecipe(id)
     
@@ -75,6 +79,21 @@ const paginationController = function(goToPage){
   PaginationView.render(model.state.search)
 }
 
+const bookmarkedController = function(){
+  // add/delete bookmark
+  if(!model.state.recipe.bookmarked){
+    model.addBookmarked(model.state.recipe);
+  }else {
+    model.deleteBookmarked(model.state.recipe.id)
+  }
+  // update bookmark
+  recipeView.update(model.state.recipe)
+
+  // render bookmark
+  BookmarksView.render(model.state.bookmarks)
+}
+
+
 // Update Servings (basicalluy update ingredients when more person added)
 
 const servingsController = function(newServings){
@@ -86,6 +105,10 @@ const servingsController = function(newServings){
   // update only specific part(text,attribute etc) into DOM ,not reload full DOM such as virtual DOM
   recipeView.update(model.state.recipe);
 
+}
+
+const bookmarkController = function(){
+  bookmarksView.render(model.state.bookmarks)
 }
 
 /* Notes:
@@ -102,10 +125,15 @@ In your example, the functions recipeView.addHandlerRender and searchView.addHan
 
 const appStart=function(){
   // subscriber pattern
+  bookmarksView.addHandlerBookmark(bookmarkController)
+
   recipeView.addHandlerRender(recipeController) // Subscriber listens to page load
+  recipeView.addHandlerUpdateServings(servingsController)
+  recipeView.addHandlerBookmarked(bookmarkedController)
+
   searchView.addHandlerSearch(searchRecipeController) // Subscriber listens to form submit
   PaginationView.addHandlerClick(paginationController)
-  recipeView.addHandlerUpdateServings(servingsController)
+  
 }
 
 appStart();
