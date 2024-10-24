@@ -13,6 +13,7 @@ import ResultsView from "./views/resultsView.js";
 import PaginationView from "./views/paginationView.js";
 import BookmarksView from "./views/bookmarksView.js";
 import bookmarksView from './views/bookmarksView.js';
+import addrecipeView from './views/addrecipeView.js';
 
 // parcel code, if you make any chnages in code then page don't reload  and data will not lost. it preserve application state and It is only used in development
 // if(module.hot) {
@@ -111,6 +112,28 @@ const bookmarkController = function(){
   bookmarksView.render(model.state.bookmarks)
 }
 
+const addRecipeController = async function(newRecipe){
+  try{
+    // upload new recipe data
+    await model.uploadRecipe(newRecipe)
+    //render recipe
+    addrecipeView.render(model.state.recipe)
+    //success message
+    addrecipeView.renderMessage()
+
+    // close popup window
+    setTimeout(function(){
+      addrecipeView.toggleWindow();
+      
+    },2000)
+
+  }catch(error){
+    addrecipeView.renderError(error)
+  }
+} 
+
+
+
 /* Notes:
 The Subscriber-Publisher Pattern (also known as Pub-Sub pattern) is a design pattern where one part of your application (the Publisher) triggers an event, and another part (the Subscriber) listens for that event and responds to it. This pattern is useful for decoupling different parts of your code so that they don’t depend directly on each other.
 
@@ -134,6 +157,7 @@ const appStart=function(){
   searchView.addHandlerSearch(searchRecipeController) // Subscriber listens to form submit
   PaginationView.addHandlerClick(paginationController)
   
+  addrecipeView.addHandlerUplpad(addRecipeController)
 }
 
 appStart();
