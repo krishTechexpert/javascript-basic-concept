@@ -32,10 +32,11 @@ import addrecipeView from './views/addrecipeView.js';
 const recipeController = async function(){
 
   try{
-    // render spinner
-    recipeView.renderSpinner()
     const id= window.location.hash.slice(1);
     if(!id) return
+    // render spinner
+    recipeView.renderSpinner()
+    
 
     // update results view to mark selected search results
     ResultsView.update(model.getSearchResultsPage())
@@ -44,7 +45,7 @@ const recipeController = async function(){
     // Loading Recipe:  here id will be sent to in modal file
     await model.loadRecipe(id)
     
-    //2 Render Recipe
+    //2 Render Recipe description
     recipeView.render(model.state.recipe);
   }catch(error){
     console.log(error)
@@ -62,7 +63,7 @@ const searchRecipeController = async function(query){
     ResultsView.renderSpinner();
     // loading recipe
     await model.loadSearchResult(query)
-    //Rendering recipe
+    //Rendering recipe in sidebar list
     ResultsView.render(model.getSearchResultsPage())
     // show pagination
     PaginationView.render(model.state.search)
@@ -116,15 +117,21 @@ const addRecipeController = async function(newRecipe){
   try{
     // upload new recipe data
     await model.uploadRecipe(newRecipe)
-    //render recipe
-    addrecipeView.render(model.state.recipe)
+
     //success message
     addrecipeView.renderMessage()
 
+    // render bookmark view
+    bookmarksView.render(model.state.bookmarks)
+
+    // change Id in URL
+    //window.history.pushState(null,'',`#${model.state.recipe.id}`); // change the url without loading page (not working)
+    
+    window.location.href = `#${model.state.recipe.id}`;
+    
     // close popup window
     setTimeout(function(){
       addrecipeView.toggleWindow();
-      
     },2000)
 
   }catch(error){
