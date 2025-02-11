@@ -19,6 +19,8 @@ Final Conclusion
 ✅ Objects do not create lexical scope; they are just data structures.
 
 
+
+
 const obj = {
   value: 10,
   arrowFunction() {
@@ -87,9 +89,12 @@ Phases of Execution Context
 Each execution context goes through two main phases:
 
 1. Creation Phase
-The execution context is created.
-The Variable Environment (memory allocation for variables and functions) is set up.
-The this keyword is determined.
+The execution context is created. it has following items set for us. such as 
+a.) The Variable Environment (memory allocation for variables and functions) is set up.
+b.) set the value of this keyword (The this keyword is determined.)
+c.) outer environment ( if inner function hs no varaible then it goes to parent scope )
+d.) 'arguments': which hold all the values passed to function
+
 A Lexical Environment (scope chain) is created.
 
 in Short ,
@@ -543,12 +548,3 @@ Key Takeaways
 ✅ Helps in non-blocking execution, keeping JavaScript fast.
 
 
-
-
-![alt text](<Screenshot from 2025-02-11 16-50-28.png>)
-
-![alt text](<Screenshot from 2025-02-11 13-36-50.png>)
-
-![alt text](<Screenshot from 2025-02-11 12-44-20.png>)
-
-![alt text](<Screenshot from 2025-02-10 19-45-00.png>)
