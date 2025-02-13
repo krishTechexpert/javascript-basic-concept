@@ -358,3 +358,62 @@ function multiply(a,b){
 const multiplyby5 = multiply.bind(null,2);
 //bind like function multiplyby5(2,b){return 2*b;}
 console.log(multiplyby5(5));//10
+
+// Date 12/02/2025
+
+/*-------- Prototypal inheritance ------------------*/
+/*Inheritance: One Object gets access  to the properties and methods of another object*/
+
+const people = {
+  firstName:'default',
+  lastName:'default',
+  age:20,
+  getFullName:function(){
+    return this.firstName + ' ' + this.lastName;
+  }
+}
+
+const john = {
+  firstName:'John',
+  lastName:'doe',
+}
+john.__proto__=people // don;t do this..b'coz modern browser does automatically for us..otherwisse app will slowdown
+//john.__proto__=people :  it will point like [[prototype]]:Object(it means people obj)
+//john.__proto__= null try also this it will break prototype chain
+
+
+console.log(john.getFullName());
+console.log(john.firstName); 
+// first it will look inside john obj if property not availble then go to people obj see age
+console.log(john.age);//20
+//console.log(people.getFullName.call(john))
+
+const jane = {
+  firstName:'jane',
+  __proto__:john // it will point like [[prototype]]:Object(it means john obj)
+}
+
+console.log(jane.lastName);//doe
+console.log(jane.age);//20
+console.log(jane);
+//when you print console.log(jane) the you will see prototype chain in browser console.
+
+//everythin is an object 
+
+let a2 = {}// a2.__proto points to Object{}
+let b2=function(){}// b2.__proto__ points to empty function such as function Empty(){}
+b2.__proto__.bind;// that 's why you can access bind method 
+let c2=[];//c2.__proto__ points to array which conatins all array method such as  [concat:f,push:f] etc.
+
+/*------- Reflection and Extend ---------- */
+
+/**
+ * Reflection: An object can look at itself, listing and changing its properties and methods.
+ */
+
+for(prop in jane){
+  console.log(prop + ' : '+ jane[prop])
+}
+
+
+
