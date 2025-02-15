@@ -416,4 +416,460 @@ for(prop in jane){
 }
 
 
+/** Section-06: ------- Building Objects ------------ */
 
+// way to building object
+//1. object literal obj ={}
+//2. new Object();
+//3 function constructor new Person()
+//4 class
+//5 Object.create()
+//6 Factory function 
+//7 json
+
+//1. Object Literal (Most Common)
+const pop = {
+  firstName: 'John',
+  lastName: 'Doe',
+  age: 30,
+  getFullName: function() {
+    return this.firstName + ' ' + this.lastName;
+  }
+};
+
+console.log(pop.getFullName()); // "John Doe"
+
+//2. Using new Object()
+const mack = new Object();
+mack.firstName = 'John';
+mack.lastName = 'Doe';
+mack.age = 30;
+mack.getFullName = function() {
+  return this.firstName + ' ' + this.lastName;
+};
+
+console.log(mack.getFullName()); // "John Doe"
+
+//3. Using a Constructor Function
+
+function Person(firstName, lastName, age) {
+  console.log('krishna')
+  this.firstName = firstName;
+  this.lastName = lastName;
+  this.age = age;
+  // this.getFullName = function() { // if we create 10 object then each object contain getfullName() method which consume memory.. so we can save memory by using prototype
+  //   return this.firstName + ' ' + this.lastName;
+  // };
+}
+
+Person.prototype.getFullName = function(){ // esko  ek bar memory milegi for 10 new Object
+  return this.firstName + ' ' + this.lastName;
+}
+//without new
+//const joh1 =  Person('John1', 'Doe', 30);// it is normal function which retrun undefined
+const joh = new Person('John', 'Doe', 30);
+console.log(joh)
+
+console.log(joh.getFullName()); // "John Doe"
+//👉 Useful when creating multiple objects with similar properties.
+
+//4. Using ES6 Classes (Recommended for OOP)
+
+class Joe {
+  constructor(firstName, lastName, age) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.age = age;
+  }
+
+  getFullName() {
+    return this.firstName + ' ' + this.lastName;
+  }
+}
+
+const joe = new Joe('John', 'Doe', 30);
+console.log(joe.getFullName()); // "John Doe"
+//👉 Preferred for Object-Oriented Programming (OOP).
+
+//5. Using Object.create()
+const personPrototype = {
+  getFullName: function() {
+    return this.firstName + ' ' + this.lastName;
+  }
+};
+
+const jax = Object.create(personPrototype);
+jax.firstName = 'John';
+jax.lastName = 'Doe';
+
+console.log(jax.getFullName()); // "John Doe"
+//👉 Used for prototype-based inheritance.
+
+//6. Using Factory Functions
+function createPerson(fName,lName,age){
+  return {
+    fName,lName,age,
+    getFullName(){
+      return `${this.firstName} ${this.lastName}`;
+    }
+  }
+}
+const Peter = createPerson('max','luck',30);
+console.log(Peter.getFullName());
+//👉 Useful for creating multiple objects without using new.
+
+//7. Using JSON (JSON.parse() and JSON.stringify())
+const jsonString = '{"firstName": "John", "lastName": "Doe", "age": 30}';
+const moh = JSON.parse(jsonString);
+
+console.log(moh.firstName); // "John"
+
+
+/** ------ What is Prototype in JavaScript? ---------- */
+
+/*In JavaScript, prototype is a mechanism that allows objects to inherit properties and methods from other objects. Every JavaScript function (except arrow functions) has a prototype property, which is an object that serves as a blueprint for creating new objects.
+
+1. Understanding Prototype Chain
+Every JavaScript object has an internal property called [[Prototype]], which refers to another object.
+When you try to access a property or method on an object, JavaScript first looks for it on the object itself.
+If it’s not found, it searches in the object's prototype (__proto__).
+This process continues up the prototype chain until it reaches null.*/
+
+//2. Example of Prototype in Action
+
+function Pascal(name, age) {
+  this.name = name;
+  this.age = age;
+}
+
+// Adding a method to the prototype
+Pascal.prototype.sayHello = function () {
+  return `Hello, my name is ${this.name}`;
+};
+
+const luck = new Pascal('luck', 25);
+console.log(luck.sayHello()); // "Hello, my name is John"
+
+// Checking the prototype chain
+console.log(luck.__proto__ === Pascal.prototype); // true
+console.log(Pascal.prototype.__proto__ === Object.prototype); // true
+console.log(Object.prototype.__proto__ === null); // true
+
+/**Key Takeaways:
+sayHello is not inside john, but inside Person.prototype, and john can access it through prototype inheritance.
+john.__proto__ points to Person.prototype.
+The prototype chain eventually leads to Object.prototype.
+ */
+
+//3. Prototype vs __proto__
+//prototype: A property of functions that is used when creating new objects with new.
+//__proto__: A property of objects that refers to their prototype.
+console.log(Pascal.prototype); // The prototype object {sayHello:fn}
+console.log(luck.__proto__);   // Points to Pascal.prototype {sayHello:fn}
+console.log(luck.__proto__ === Pascal.prototype); // true
+
+/** 4. Prototype Inheritance  */
+//You can use prototypes to create inheritance between objects.
+
+//Inheritance allows an object to use properties and methods from another object.
+//We will create a parent class (Animal) and a child class (Dog) that inherits from Animal.
+
+
+// Step 1: Define a constructor function for the parent class
+
+function Animal(name){
+  console.log(this)//Dog{}
+
+  this.name = name; // Every animal will have a name property
+}
+// Step 2: Add a method to the Animal prototype
+
+Animal.prototype.speak = function(){
+  return `${this.name} makes a sound`; // A general method for all animals
+}
+// Inheriting Animal prototype in Dog
+// Step 3: Define a constructor function for the child class
+
+function Dog(name,breed){
+  console.log(this);//Dog{}
+  Animal.call(this, name); // Inherit the 'name' property from Animal
+  //Animal.call(this, name); // Calls Animal and sets this.name = name
+  //Animal k ander this treat as dog object
+//internally work like   this.name = name; // Copying from Animal manually
+//But instead of manually copying, we reuse Animal using call().
+
+/*5. When Should You Use call()?
+Use call() when you want to "inherit" properties from a parent constructor function inside a child constructor function.
+This is how classical constructor inheritance works in JavaScript.*/
+
+
+  this.breed = breed; // Dog-specific property
+
+  //👉 This makes sure that Dog has a name and breed, but it does NOT yet inherit the speak() method.
+// / Link Dog to Animal Using Object.create()
+
+
+}
+// Set prototype of Dog to be an instance of Animal
+// Step 4: Set Dog’s prototype to be an object created from Animal’s prototype
+//Dog : {name:'Buddy' , [[prototype]]:Animal}
+Dog.prototype = Object.create(Animal.prototype) //This line makes sure that Dogs can use methods from Animals. both will work such as 
+//Dog.prototype = {...Animal.prototype} //create new object
+
+// in simple words, create copy all animale methods and put inside in new object
+
+/*👉 What does this do?
+
+Creates a new object that is linked to Animal.prototype.
+Makes Dog.prototype inherit from Animal.prototype.
+Now, all Dog instances can use speak() from Animal.*/
+
+//What Happens If We Use Dog.prototype = Animal.prototype;?
+//Now, both Dog.prototype and Animal.prototype point to the same object in memory.
+//because both will  points to same memory location
+// Incorrect way: Both Dog and Animal share the same prototype
+//Dog.prototype = Animal.prototype;
+
+const dog1 = new Dog("Buddy", "Golden Retriever");
+dog1.speak = function () {
+  return `${this.name} barks!`;
+};
+
+console.log(dog1.speak()); // "Buddy barks!"
+
+const animal1 = new Animal("Leo");
+console.log(animal1.speak()); // "Leo barks!" ❌ (should be "Leo makes a sound")
+
+/*Problem?
+Since Dog.prototype and Animal.prototype now refer to the same object, any change in Dog.prototype will also affect Animal.prototype.
+This means if we add bark() or override speak() in Dog.prototype, it will also change Animal.prototype, which is wrong!*/
+
+//Why Object.create(Animal.prototype) is the Correct Way
+/*How This Works
+Object.create(Animal.prototype) creates a new empty object that inherits from Animal.prototype.
+Dog.prototype now has its own object, which is linked to Animal.prototype, but they are not the same object.*/
+
+// Correct way: Dog.prototype is a separate object linked to Animal.prototype
+//Dog.prototype = Object.create(Animal.prototype);
+
+const dog3 = new Dog("Buddy", "Golden Retriever");
+dog1.speak = function () {
+  return `${this.name} barks!`;
+};
+
+console.log(dog3.speak()); // "Buddy barks!" ✅
+
+const animal3 = new Animal("Leo");
+console.log(animal3.speak()); // "Leo makes a sound" ✅ (Animal is unchanged)
+
+/*Now, What Happened?
+Dog.prototype inherits from Animal.prototype, but they are not the same object.
+We can now modify Dog.prototype without affecting Animal.prototype.*/
+
+
+// Step 5: Reset the constructor property (otherwise, it will point to Animal)
+Dog.prototype.constructor = Dog;
+
+/**
+ * 
+ * 🔹 Why is this needed?
+When we do Dog.prototype = Object.create(Animal.prototype);, it overwrites Dog.prototype, and the constructor now points to Animal.
+So, we manually set Dog.prototype.constructor = Dog; to fix this.
+
+
+ */
+
+/*👉 Why do we need this?
+
+When we set Dog.prototype = Object.create(Animal.prototype);, the constructor gets lost.
+We fix it by setting Dog.prototype.constructor = Dog;.*/
+
+//Case 1: If We Don't Use Dog.prototype.constructor = Dog;
+ //console.log(dog.constructor); 
+// Output: [Function: Animal] ❌ (Wrong, should be Dog)
+
+//Confusion: If someone checks dog.constructor, they might think dog is an instance of Animal, not Dog.
+
+//This makes no sense because Dog is a child class, and its constructor should be Dog, not Animal.
+
+//✅ If you don't set it, JavaScript automatically assigns Animal as the constructor (which is incorrect).
+
+
+// Step 6: Add a new method specific to Dog
+
+Dog.prototype.bark = function () {
+  return `${this.name} barks`;
+};
+
+// Step 7: Create an instance of Dog
+
+const dog = new Dog("Buddy", "Golden Retriever");
+console.log(dog);
+console.log("dog= " + dog.speak() + " " + dog.bark())
+
+// Step 8: Call inherited and own methods
+//This method dog.speak() is shared by all animals instead of being duplicated.
+
+console.log(dog.speak()); // "Buddy makes a sound" (from Animal prototype)
+console.log(dog.bark());  // "Buddy barks!" (from Dog prototype)
+
+// Step 9: Checking the prototype chain
+console.log(dog instanceof Dog);    // true
+console.log(dog instanceof Animal); // true
+console.log(dog.__proto__ === Dog.prototype); // true
+console.log(Dog.prototype.__proto__ === Animal.prototype); // true
+console.log(Animal.prototype.__proto__ === Object.prototype); // true
+
+
+/**
+ * 
+ * Step-by-Step Explanation
+1.) Creating the Animal constructor:
+
+function Animal(name) { this.name = name; }
+When we create an Animal, it will have a name property.
+2.) Adding a method to Animal.prototype:
+
+Animal.prototype.speak = function () { return this.name + " makes a sound"; };
+This method is shared by all animals instead of being duplicated.
+3.)Creating the Dog constructor:
+
+function Dog(name, breed) { Animal.call(this, name); this.breed = breed; }
+Animal.call(this, name); calls the Animal function, making sure Dog gets the name property.
+4.) Setting Dog.prototype to inherit from Animal.prototype:
+
+Dog.prototype = Object.create(Animal.prototype);
+This makes Dog inherit all methods from Animal.prototype.
+5.) Fixing the constructor property:
+
+Dog.prototype.constructor = Dog;
+By default, the constructor will still point to Animal, so we manually fix it.
+6.) Adding a bark method to Dog.prototype:
+
+Dog.prototype.bark = function () { return this.name + " barks!"; };
+This method is only for dogs, not for all animals.
+7.) Creating an instance of Dog:
+
+const dog = new Dog("Buddy", "Golden Retriever");
+dog now has both name and breed, and it can use speak() from Animal and bark() from Dog.
+8.) Calling the methods:
+
+dog.speak(); → "Buddy makes a sound" (from Animal.prototype)
+dog.bark(); → "Buddy barks!" (from Dog.prototype)
+9.) Checking prototype relationships:
+
+dog instanceof Dog → true ✅ (Yes, dog is an instance of Dog)
+dog instanceof Animal → true ✅ (Yes, dog is also an instance of Animal)
+dog.__proto__ === Dog.prototype → true ✅ (dog inherits from Dog.prototype)
+Dog.prototype.__proto__ === Animal.prototype → true ✅ (Dog inherits from Animal)
+Summary
+ . Prototype inheritance lets Dog reuse Animal’s properties and methods.
+ . Avoids duplication because speak() is stored in Animal.prototype, not inside each Dog object.
+   Prototype chain:
+ . dog → Dog.prototype → Animal.prototype → Object.prototype → null
+  Let me know if you need any more clarifications! 😊🚀
+
+ * 
+ */
+
+
+
+/*. Checking Prototypes
+You can check an object’s prototype using:
+
+Object.getPrototypeOf(obj)
+instanceof operator*/
+console.log(Object.getPrototypeOf(luck) === Pascal.prototype); // true
+console.log(luck instanceof Pascal); // true
+
+/**
+ * Summary
+Prototype is an object from which other objects inherit properties and methods.
+Objects in JavaScript have a __proto__ property that points to their prototype.
+Functions have a prototype property used for creating new objects.
+JavaScript uses prototype chaining to look up properties and methods.
+ES6 class syntax is just a cleaner way of working with prototypes.
+
+ * 
+ */
+
+
+/*--------- 15/02/25 polyfill */
+//Polyfill: code that adds a feature which the engine may lack.
+
+if(!Object.create){
+  Object.create = function(o){
+    if(arguments.length>1){
+      //Ensures that Object.create is only called with one argument. If more than one argument is provided, an error is thrown.
+
+      throw new Error('Object.create implementation'+ 'only accept the first parameter')
+    }
+    function F(){};//A temporary constructor function F is created.
+    
+    
+    F.prototype=o;//The prototype of F is set to o, meaning that any object created using F will inherit from o.
+    
+    console.log(F);
+    return new F();
+  }
+}
+
+//Syntactic sugar : A different way to type something that does not change how it works under theh hood.
+
+const d1=[];
+console.log(typeof d1);//object
+console.log(d1.toString());//empty
+console.log(Object.prototype.toString.call(d1));//[object Array] confirming that d1 is an array. 
+//returns the internal [[Class]] of the object, formatted as "[object Type]".
+//better way
+/**Object.prototype.toString.call(d1)  => is a better way to determine the type of d1 compared to using typeof because it provides more accurate results, especially for distinguishing between different built-in objects.
+
+ */
+console.log(Array.isArray(d1)); // true
+
+/**Alternative Approach Using Array.isArray()
+ * It is more readable and faster than using Object.prototype.toString.call().
+
+ */
+
+console.log(Object.prototype.toString.call([]));        // "[object Array]"
+console.log(Object.prototype.toString.call({}));        // "[object Object]"
+console.log(Object.prototype.toString.call(null));      // "[object Null]"
+console.log(Object.prototype.toString.call(undefined)); // "[object Undefined]"
+console.log(Object.prototype.toString.call(123));       // "[object Number]"
+console.log(Object.prototype.toString.call("Hello"));   // "[object String]"
+console.log(Object.prototype.toString.call(new Date()));// "[object Date]"
+console.log(Object.prototype.toString.call(/regex/));   // "[object RegExp]"
+console.log(Object.prototype.toString.call(function(){})); // "[object Function]"
+
+
+/*function Mary(name){
+  this.name=name;
+}
+const e = new Mary('Maary');
+console.log(typeof e);//object
+console.log(Object.prototype.toString.call(e));//[object object]
+console.log(e instanceof Mary);//true
+
+ function Mary(name) {
+  this.name = name;
+}
+
+Mary.prototype.toString = function() {
+  return `[object ${Mary.name}]`;
+};
+
+const e1 = new Mary("Maary");
+
+console.log(e1.toString()); // "[object Mary]"
+*/
+ 
+
+
+/**
+ * Conclusion
+✅ Object.prototype.toString.call(value) is a more reliable way to determine an object's type than typeof.
+✅ For checking arrays specifically, Array.isArray(value) is the best method.
+✅ toString.call() is helpful when dealing with various built-in objects like Date, RegExp, and null.
+
+ */
