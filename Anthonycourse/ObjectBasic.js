@@ -864,8 +864,6 @@ const e1 = new Mary("Maary");
 console.log(e1.toString()); // "[object Mary]"
 */
  
-
-
 /**
  * Conclusion
 ✅ Object.prototype.toString.call(value) is a more reliable way to determine an object's type than typeof.
@@ -873,3 +871,313 @@ console.log(e1.toString()); // "[object Mary]"
 ✅ toString.call() is helpful when dealing with various built-in objects like Date, RegExp, and null.
 
  */
+
+/******** 16/2/25 Promise, Async and await ***********/
+//Transpile: Convert the syntax of one programming language to another such as typescript,jsx convert into javascript
+
+//Promise: A standardized approach  to dealing with asynchronous events and callbacks
+
+const PENDING = 0;
+const FULFILLED = 1;
+const REJECTED = 2;
+
+function CustomPromise(executor) {
+    let state=PENDING;
+    let value=null;
+    let handlers=[];
+    let catches =[];
+
+    function resolve(result){
+      if(state !== PENDING) return;
+
+      state=FULFILLED;
+      value=result;
+
+      handlers.forEach((fn) => fn(value));
+    }
+
+    function reject(err) {
+      if(state !== PENDING) return;
+      state = REJECTED;
+      value=err;
+      catches.forEach(fn => fn(err));
+    }
+
+    this.then = function(callback){
+      console.log('run...'+callback)
+        if(state == FULFILLED){
+          callback(value)
+        }else {
+          handlers.push(callback);
+        }
+    }
+
+    executor(resolve,reject);
+}
+
+const doWork = (res,rej) => {
+  setTimeout(() => {res('hello world')} ,1000);
+}
+
+
+
+
+
+const someText = new CustomPromise(doWork);//1sec ka wait ho reha hai toh tab tak  then() ko run ker do and push then callback inside handlers Array, after 1 sec
+//resolved method execute.
+
+someText
+.then((val) => {
+  console.log('1st log: '+ val)
+})
+
+someText.then((val) => {
+  console.log('2nd log: '+ val)
+})
+
+setTimeout(() =>{
+  someText.then((val) => {
+    console.log('3rd log: '+ val)
+  })
+},3000)
+
+//simple another example
+
+function myPromise(executor){
+  let successCallBack;
+  let errorCallBack;
+
+  this.then = function(callback){
+    successCallBack = callback; // Store the function for later use
+  }
+  
+  this.catch = function(callback){
+    errorCallBack=callback;// Store the function for later use
+  }
+  
+  function resolve(value){
+    if(successCallBack){
+      successCallBack(value)
+    }
+  }
+
+  function reject(err){
+    if(errorCallBack){
+      errorCallBack(err)
+    }
+  }
+      // Immediately call the executor function and pass `resolve` and `reject`
+
+  executor(resolve,reject)
+
+}
+
+const promise = new Promise((resolve,reject) => {
+  setTimeout(() => {resolve('hello krish')},1000)
+})
+
+// This allows us to store `.then()` and `.catch()` callbacks
+
+promise.then(function(value){
+  console.log(`Results success:${value}`)
+})
+
+promise.then(function(value){
+  console.log(`Results success2:${value}`)
+})
+
+//🔹 Example 1: Normal Callback Function
+
+function doWork1(callback){
+  setTimeout(() => {callback('I am callback')},2000)
+}
+
+doWork1((message) => {
+  console.log(message);
+});
+
+//🔹 Example 2: Same Concept, but Using a Promise
+
+function doWork2(){
+  return new Promise((resolve,reject) => {
+      setTimeout(() => {resolve("I am callback 2")},2000)
+  })
+}
+
+doWork2().then((message) => {
+  console.log(message);
+  return message;//chaining
+}).then((value) => {
+  console.log("hello "+value)
+});
+
+
+/*********Sequential Promises in JavaScript (E-commerce Example)
+A sequential promise means executing multiple promises one after another (in order), where each step depends on the previous step's result.
+Let's say you are placing an online order. The steps are:
+1️⃣ Select a product
+2️⃣ Make a payment
+3️⃣ Confirm the order
+4️⃣ Ship the product
+
+Each step depends on the success of the previous step.
+
+ */
+
+function selectProduct(){
+  return new Promise((resolve,reject) => {
+    setTimeout(() => {
+      console.log("1️⃣ Product selected: Laptop");
+      resolve('Laptop')
+    },1000)
+  })
+}
+
+function makePayment(product){
+  return new Promise((resolve) => {
+    setTimeout(() => {
+        console.log(`2️⃣ Payment successful for ${product}`);
+        resolve("Payment ID: 12345");
+    }, 2000);
+});
+
+}
+
+function confirmOrder(paymentId) {
+  return new Promise((resolve) => {
+      setTimeout(() => {
+          console.log(`3️⃣ Order confirmed with ${paymentId}`);
+          resolve("Order ID: 98765");
+      }, 1500);
+  });
+}
+
+function shipProduct(orderId) {
+  return new Promise((resolve) => {
+      setTimeout(() => {
+          console.log(`4️⃣ Product shipped with ${orderId}`);
+          resolve("Tracking ID: XYZ123");
+      }, 2500);
+  });
+}
+
+selectProduct()
+.then(makePayment)
+.then(confirmOrder)
+.then(shipProduct)
+.then((statusMsg) => {
+  console.log(statusMsg)
+})
+
+/**
+ * 1️⃣ Promise.all() → Runs multiple promises in parallel
+📌 Waits for all promises to resolve; fails if ANY promise rejects.
+✅ Best for running independent tasks together.
+❗ If ANY promise rejects, Promise.all() immediately fails.
+
+
+* 
+ */
+
+//Example: Fetching product details, price, and stock
+const fetchProductDetails = new Promise((resolve) => 
+  setTimeout(() => resolve("Product: Laptop"), 1000)
+);
+
+const fetchPrice = new Promise((resolve,reject) => 
+  setTimeout(() => resolve("Price: $1000"), 2000)
+);
+
+const fetchStock = new Promise((resolve) => 
+  setTimeout(() => resolve("Stock: Available"), 1500)
+);
+
+Promise.all([fetchProductDetails, fetchPrice, fetchStock])
+  .then((values) => console.log("✅ All Data:", values))
+  .catch((error) => console.log("❌ Error:", error));
+//(3) ['Product: Laptop', 'Price: $1000', 'Stock: Available']
+
+
+/** 2️⃣ Promise.allSettled() → Waits for all, never fails
+📌 Waits for ALL promises to settle (resolve or reject), without stopping.
+✅ Best when you need results for all tasks, even if some fail.
+✔ No error stops execution—each promise reports success or failure.
+
+ */
+//Example: Fetching data, where one API might fail
+function fetchUser(){
+  return new Promise((resolve) => 
+    setTimeout(() => resolve("User Data"), 1000)
+  );
+} 
+
+
+function fetchOrders(){
+  return new Promise((resolve,reject) => {
+    setTimeout(() => reject("Order API failed"), 2000)
+
+  })
+}
+
+Promise.allSettled([fetchUser(), fetchOrders()])
+  .then((results) => console.log("✅ Results:", results));
+
+  // ✅ Results: [
+  //   { status: 'fulfilled', value: 'User Data' },
+  //   { status: 'rejected', reason: 'Order API failed' }
+  // ]
+  
+
+  /**
+   * 3️⃣ Promise.race() → First to finish wins
+📌 Resolves/rejects as soon as the FIRST promise settles.
+✅ Best for timeout logic (e.g., cancel if API is too slow).
+*✔ The fastest resolved promise is returned.
+❗ If the first one rejects, the race immediately fails.
+
+ 
+*/
+
+//Example: Fastest response wins
+const fastAPI = new Promise((resolve) => 
+    setTimeout(() => resolve("Fast API Response"), 1000)
+);
+
+const slowAPI = new Promise((resolve) => 
+    setTimeout(() => resolve("Slow API Response"), 3000)
+);
+
+Promise.race([fastAPI, slowAPI])
+    .then((result) => console.log("✅ First response:", result));
+
+    //✅ First response: Fast API Response
+
+/**
+ * 4️⃣ Promise.any() → First successful one wins
+📌 Resolves when ANY promise succeeds; ignores failures until one succeeds.
+✅ Best when you want the first available success.
+
+✔ Only the first success is returned.
+❗ If ALL promises fail, it returns an AggregateError.
+
+
+  */
+
+//Example: Multiple API endpoints (fastest success wins)
+const api1 = new Promise((resolve, reject) => 
+  setTimeout(() => reject("API 1 failed"), 1000)
+);
+
+const api2 = new Promise((resolve) => 
+  setTimeout(() => resolve("API 2 success"), 2000)
+);
+
+const api3 = new Promise((resolve) => 
+  setTimeout(() => resolve("API 3 success"), 1500)
+);
+
+Promise.any([api1, api2, api3])
+  .then((result) => console.log("✅ First successful:", result))
+  .catch((error) => console.log("❌ All failed:", error));
+
+  //✅ First successful: API 3 success
