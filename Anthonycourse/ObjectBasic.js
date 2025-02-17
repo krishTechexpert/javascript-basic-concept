@@ -556,8 +556,8 @@ console.log(Pascal.prototype.__proto__ === Object.prototype); // true
 console.log(Object.prototype.__proto__ === null); // true
 
 /**Key Takeaways:
-sayHello is not inside john, but inside Person.prototype, and john can access it through prototype inheritance.
-john.__proto__ points to Person.prototype.
+sayHello is not inside luck, but inside Person.prototype, and luck can access it through prototype inheritance.
+luck.__proto__ points to Person.prototype.
 The prototype chain eventually leads to Object.prototype.
  */
 

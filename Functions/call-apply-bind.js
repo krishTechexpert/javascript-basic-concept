@@ -144,3 +144,5 @@ document.querySelector('.poll').addEventListener('click',poll.registerNewAnswer.
 
 poll.displayResult.call({answers:[5,2,3]})
 poll.displayResult.call({answers:[5,2,3]},'string')
+
+
