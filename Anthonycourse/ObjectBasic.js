@@ -6,7 +6,7 @@ console.log(emp[key])//20
 emp[true]="yes";
 
 emp[1]="one";
-console.log(emp[1])//one//automatically convert like that emp[1].toString()="one"
+console.log(emp[1])//one//automatically convert like that emp[1].toString()="1
 console.log(emp["1"]);//one
 console.log(emp.true)//yes
 
@@ -556,8 +556,8 @@ console.log(Pascal.prototype.__proto__ === Object.prototype); // true
 console.log(Object.prototype.__proto__ === null); // true
 
 /**Key Takeaways:
-sayHello is not inside luck, but inside Person.prototype, and luck can access it through prototype inheritance.
-luck.__proto__ points to Person.prototype.
+sayHello is not inside luck, but inside Pascal.prototype, and luck can access it through prototype inheritance.
+luck.__proto__ points to Pascal.prototype.
 The prototype chain eventually leads to Object.prototype.
  */
 
@@ -593,7 +593,7 @@ Animal.prototype.speak = function(){
 function Dog(name,breed){
   console.log(this);//Dog{}
   Animal.call(this, name); // Inherit the 'name' property from Animal
-  //Animal.call(this, name); // Calls Animal and sets this.name = name
+  //Animal.call(this, name); // Calls Animal and sets this.name(Dog obj) = name
   //Animal k ander this treat as dog object
 //internally work like   this.name = name; // Copying from Animal manually
 //But instead of manually copying, we reuse Animal using call().
@@ -613,8 +613,8 @@ This is how classical constructor inheritance works in JavaScript.*/
 // Set prototype of Dog to be an instance of Animal
 // Step 4: Set Dog’s prototype to be an object created from Animal’s prototype
 //Dog : {name:'Buddy' , [[prototype]]:Animal}
-Dog.prototype = Object.create(Animal.prototype) //This line makes sure that Dogs can use methods from Animals. both will work such as 
-//Dog.prototype = {...Animal.prototype} //create new object
+Dog.prototype = Object.create(Animal.prototype) //This line makes sure that Dogs can use methods from Animals. But
+//Dog.prototype = {...Animal.prototype} //create new object but it will copy shallow copy and prototype chain lost, not the same as Object.create()
 
 // in simple words, create copy all animale methods and put inside in new object
 
@@ -626,7 +626,7 @@ Now, all Dog instances can use speak() from Animal.*/
 
 //What Happens If We Use Dog.prototype = Animal.prototype;?
 //Now, both Dog.prototype and Animal.prototype point to the same object in memory.
-//because both will  points to same memory location
+//because both will  points to same memory location if we add method eat method on Dog then it will also apply on Animal as well..due to same memory location
 // Incorrect way: Both Dog and Animal share the same prototype
 //Dog.prototype = Animal.prototype;
 
